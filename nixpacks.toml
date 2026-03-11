@@ -1,0 +1,9 @@
+[phases.install]
+cmds = ["npm install"]
+
+[phases.build]
+cmds = ["npm run build"]
+cacheDirectories = []
+
+[start]
+cmd = "npx serve -s dist --single"
