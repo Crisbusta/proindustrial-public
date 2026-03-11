@@ -1706,6 +1706,22 @@ ul, ol {
   text-align: center;
 }
 
+/* ── Inbox back button (hidden on desktop) ───────────── */
+.inbox-back-btn {
+  display: none;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--color-cta);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--sp-3) var(--sp-4);
+  margin-bottom: var(--sp-4);
+}
+.inbox-back-btn:hover { opacity: 0.8; }
+
 /* ── Panel bottom nav (mobile) ───────────────────────── */
 .panel-bottom-nav {
   display: none;
@@ -1800,6 +1816,44 @@ ul, ol {
   /* Topbar compact */
   .panel-topbar {
     padding: 0 var(--sp-4);
+  }
+
+  /* Table — horizontal scroll on mobile */
+  .panel-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .panel-table {
+    min-width: 480px;
+  }
+
+  /* Inbox tabs — less side padding */
+  .inbox-tabs {
+    padding: 0 var(--sp-4);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
+  }
+
+  /* Inbox master-detail: show list by default */
+  .inbox-panels {
+    grid-template-columns: 1fr !important;
+  }
+  .inbox-panels > .inbox-detail {
+    display: none;
+  }
+  /* When detail is open: hide list, show detail full-width */
+  .inbox-panels.detail-open > .inbox-list {
+    display: none;
+  }
+  .inbox-panels.detail-open > .inbox-detail {
+    display: block;
+    overflow-y: auto;
+  }
+
+  /* Back button — only visible on mobile */
+  .inbox-back-btn {
+    display: inline-flex !important;
   }
 
   /* Sidebar content layouts — stack on mobile */

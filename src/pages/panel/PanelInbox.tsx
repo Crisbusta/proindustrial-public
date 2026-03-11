@@ -119,7 +119,7 @@ export default function PanelInbox() {
 
       <div className="panel-content" style={{ padding: 0, display: 'flex', flexDirection: 'column', flex: 1 }}>
         {/* Tabs */}
-        <div style={{ padding: '0 var(--sp-8)', borderBottom: '1px solid var(--color-border)', background: 'var(--color-surface)', display: 'flex', gap: 0 }}>
+        <div className="inbox-tabs" style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-surface)', display: 'flex', gap: 0, padding: '0 var(--sp-8)' }}>
           {TABS.map(tab => {
             const count = tab.key === 'all' ? requests.length : requests.filter(r => r.status === tab.key).length
             return (
@@ -152,9 +152,9 @@ export default function PanelInbox() {
         </div>
 
         {/* Two-panel layout */}
-        <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr', flex: 1, overflow: 'hidden' }}>
+        <div className={`inbox-panels${selectedId ? ' detail-open' : ''}`} style={{ display: 'grid', gridTemplateColumns: '320px 1fr', flex: 1, overflow: 'hidden' }}>
           {/* List */}
-          <div style={{ borderRight: '1px solid var(--color-border)', overflowY: 'auto', background: 'var(--color-surface)' }}>
+          <div className="inbox-list" style={{ borderRight: '1px solid var(--color-border)', overflowY: 'auto', background: 'var(--color-surface)' }}>
             {filtered.length === 0 ? (
               <div className="empty-state" style={{ padding: 'var(--sp-10)' }}>
                 <div className="empty-state-icon"><IconInbox size={40} /></div>
@@ -202,10 +202,14 @@ export default function PanelInbox() {
 
           {/* Detail */}
           {selected ? (
-            <div style={{ overflowY: 'auto', padding: 'var(--sp-8)', background: 'var(--color-bg)' }}>
+            <div className="inbox-detail" style={{ overflowY: 'auto', padding: 'var(--sp-8)', background: 'var(--color-bg)' }}>
               <div style={{ maxWidth: 640 }}>
+                {/* Back button — mobile only */}
+                <button className="inbox-back-btn" onClick={() => setSelectedId(null)}>
+                  ← Volver a solicitudes
+                </button>
                 {/* Header */}
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 'var(--sp-6)', gap: 'var(--sp-4)' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 'var(--sp-6)', gap: 'var(--sp-4)', flexWrap: 'wrap' }}>
                   <div>
                     <span className={`status-badge ${selected.status}`} style={{ marginBottom: 'var(--sp-3)', display: 'inline-flex' }}>
                       {STATUS_LABELS[selected.status]}
@@ -289,7 +293,7 @@ export default function PanelInbox() {
               </div>
             </div>
           ) : (
-            <div className="empty-state" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+            <div className="inbox-detail empty-state" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
               <div className="empty-state-icon"><IconInbox size={40} /></div>
               <h3>Selecciona una solicitud</h3>
               <p>Haz clic en una solicitud para ver el detalle.</p>
