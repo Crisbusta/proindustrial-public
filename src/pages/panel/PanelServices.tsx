@@ -144,69 +144,103 @@ export default function PanelServices() {
               </h2>
             </div>
 
-            <div className="panel-table-wrapper" style={{ border: 'none', borderRadius: 0 }}>
-              <table className="panel-table">
-                <thead>
-                  <tr>
-                    <th style={{ width: '35%' }}>Nombre del servicio</th>
-                    <th>Categoría</th>
-                    <th>Descripción</th>
-                    <th>Estado</th>
-                    <th style={{ textAlign: 'right' }}>Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {services.map(svc => (
-                    <tr key={svc.id}>
-                      <td>
-                        <p style={{ fontWeight: 'var(--weight-medium)', color: 'var(--color-primary)', lineHeight: 1.4 }}>
-                          {svc.name}
-                        </p>
-                      </td>
-                      <td>
-                        <span className="badge badge-gray">{getCategoryName(svc.category)}</span>
-                      </td>
-                      <td style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--text-xs)', maxWidth: 220 }}>
-                        {svc.description
-                          ? <span title={svc.description}>{svc.description.length > 60 ? svc.description.slice(0, 60) + '…' : svc.description}</span>
-                          : <span style={{ color: 'var(--color-text-muted)', fontStyle: 'italic' }}>Sin descripción</span>
-                        }
-                      </td>
-                      <td>
-                        <button
-                          onClick={() => toggleStatus(svc.id)}
-                          className={`status-badge ${svc.status}`}
-                          style={{ border: 'none', cursor: 'pointer', background: svc.status === 'active' ? '#F0FDF4' : 'var(--color-surface-2)' }}
-                          title={svc.status === 'active' ? 'Clic para pasar a borrador' : 'Clic para activar'}
-                          aria-label={`Estado: ${svc.status === 'active' ? 'Activo' : 'Borrador'}. Clic para cambiar.`}
-                        >
-                          {svc.status === 'active' ? 'Activo' : 'Borrador'}
-                        </button>
-                      </td>
-                      <td>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 'var(--sp-2)' }}>
-                          <button
-                            className="icon-btn"
-                            onClick={() => openEdit(svc)}
-                            title="Editar servicio"
-                            aria-label={`Editar ${svc.name}`}
-                          >
-                            <IconPencil size={14} />
-                          </button>
-                          <button
-                            className="icon-btn danger"
-                            onClick={() => setDeleteId(svc.id)}
-                            title="Eliminar servicio"
-                            aria-label={`Eliminar ${svc.name}`}
-                          >
-                            <IconTrash size={14} />
-                          </button>
-                        </div>
-                      </td>
+            <div className="panel-table-desktop">
+              <div className="panel-table-wrapper" style={{ border: 'none', borderRadius: 0 }}>
+                <table className="panel-table">
+                  <thead>
+                    <tr>
+                      <th style={{ width: '35%' }}>Nombre del servicio</th>
+                      <th>Categoría</th>
+                      <th>Descripción</th>
+                      <th>Estado</th>
+                      <th style={{ textAlign: 'right' }}>Acciones</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {services.map(svc => (
+                      <tr key={svc.id}>
+                        <td>
+                          <p style={{ fontWeight: 'var(--weight-medium)', color: 'var(--color-primary)', lineHeight: 1.4 }}>
+                            {svc.name}
+                          </p>
+                        </td>
+                        <td>
+                          <span className="badge badge-gray">{getCategoryName(svc.category)}</span>
+                        </td>
+                        <td style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--text-xs)', maxWidth: 220 }}>
+                          {svc.description
+                            ? <span title={svc.description}>{svc.description.length > 60 ? svc.description.slice(0, 60) + '…' : svc.description}</span>
+                            : <span style={{ color: 'var(--color-text-muted)', fontStyle: 'italic' }}>Sin descripción</span>
+                          }
+                        </td>
+                        <td>
+                          <button
+                            onClick={() => toggleStatus(svc.id)}
+                            className={`status-badge ${svc.status}`}
+                            style={{ border: 'none', cursor: 'pointer', background: svc.status === 'active' ? '#F0FDF4' : 'var(--color-surface-2)' }}
+                            title={svc.status === 'active' ? 'Clic para pasar a borrador' : 'Clic para activar'}
+                            aria-label={`Estado: ${svc.status === 'active' ? 'Activo' : 'Borrador'}. Clic para cambiar.`}
+                          >
+                            {svc.status === 'active' ? 'Activo' : 'Borrador'}
+                          </button>
+                        </td>
+                        <td>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 'var(--sp-2)' }}>
+                            <button
+                              className="icon-btn"
+                              onClick={() => openEdit(svc)}
+                              title="Editar servicio"
+                              aria-label={`Editar ${svc.name}`}
+                            >
+                              <IconPencil size={14} />
+                            </button>
+                            <button
+                              className="icon-btn danger"
+                              onClick={() => setDeleteId(svc.id)}
+                              title="Eliminar servicio"
+                              aria-label={`Eliminar ${svc.name}`}
+                            >
+                              <IconTrash size={14} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Mobile card list */}
+            <div className="panel-mobile-list panel-table-wrapper" style={{ border: 'none', borderRadius: 0 }}>
+              {services.map(svc => (
+                <div key={svc.id} className="panel-mobile-card">
+                  <div className="panel-mobile-card-header">
+                    <p style={{ fontWeight: 'var(--weight-medium)', color: 'var(--color-primary)', fontSize: 'var(--text-sm)', lineHeight: 1.4 }}>
+                      {svc.name}
+                    </p>
+                    <div className="panel-mobile-card-actions">
+                      <button className="icon-btn" onClick={() => openEdit(svc)} aria-label={`Editar ${svc.name}`}>
+                        <IconPencil size={14} />
+                      </button>
+                      <button className="icon-btn danger" onClick={() => setDeleteId(svc.id)} aria-label={`Eliminar ${svc.name}`}>
+                        <IconTrash size={14} />
+                      </button>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-3)' }}>
+                    <span className="badge badge-gray">{getCategoryName(svc.category)}</span>
+                    <button
+                      onClick={() => toggleStatus(svc.id)}
+                      className={`status-badge ${svc.status}`}
+                      style={{ border: 'none', cursor: 'pointer', background: svc.status === 'active' ? '#F0FDF4' : 'var(--color-surface-2)' }}
+                      aria-label={`Estado: ${svc.status === 'active' ? 'Activo' : 'Borrador'}. Clic para cambiar.`}
+                    >
+                      {svc.status === 'active' ? 'Activo' : 'Borrador'}
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )}
@@ -301,6 +335,7 @@ export default function PanelServices() {
         <>
           <div className="slide-overlay" onClick={() => setDeleteId(null)} aria-hidden="true" />
           <div
+            className="panel-delete-dialog"
             role="dialog"
             aria-modal="true"
             aria-label="Confirmar eliminación"

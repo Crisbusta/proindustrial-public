@@ -73,7 +73,7 @@ export default function PanelDashboard() {
         <span className="panel-topbar-title">Resumen</span>
         <div className="panel-topbar-right">
           {newCount > 0 && (
-            <span style={{ fontSize: 'var(--text-xs)', background: '#EFF6FF', color: '#1D4ED8', padding: '2px 10px', borderRadius: 20, fontWeight: 'var(--weight-semibold)' }}>
+            <span className="panel-topbar-badge-mobile" style={{ fontSize: 'var(--text-xs)', background: '#EFF6FF', color: '#1D4ED8', padding: '2px 10px', borderRadius: 20, fontWeight: 'var(--weight-semibold)' }}>
               {newCount} solicitudes sin revisar
             </span>
           )}
@@ -134,40 +134,42 @@ export default function PanelDashboard() {
               </Link>
             </div>
 
-            <div className="panel-table-wrapper" style={{ border: 'none', borderRadius: 0 }}>
-              <table className="panel-table">
-                <thead>
-                  <tr>
-                    <th>Empresa</th>
-                    <th>Servicio solicitado</th>
-                    <th>Ubicación</th>
-                    <th>Fecha</th>
-                    <th>Estado</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {MOCK_REQUESTS.slice(0, 5).map(req => (
-                    <tr key={req.id}>
-                      <td style={{ fontWeight: 'var(--weight-medium)', color: 'var(--color-primary)' }}>{req.from}</td>
-                      <td style={{ color: 'var(--color-text-secondary)' }}>{req.service}</td>
-                      <td style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-xs)' }}>{req.location}</td>
-                      <td style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-xs)', whiteSpace: 'nowrap' }}>
-                        {formatDate(req.date)}
-                      </td>
-                      <td>
-                        <span className={`status-badge ${req.status}`}>
-                          {STATUS_LABELS[req.status]}
-                        </span>
-                      </td>
+            <div className="panel-table-desktop">
+              <div className="panel-table-wrapper" style={{ border: 'none', borderRadius: 0 }}>
+                <table className="panel-table">
+                  <thead>
+                    <tr>
+                      <th>Empresa</th>
+                      <th>Servicio solicitado</th>
+                      <th className="col-location">Ubicación</th>
+                      <th className="col-date">Fecha</th>
+                      <th>Estado</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {MOCK_REQUESTS.slice(0, 5).map(req => (
+                      <tr key={req.id}>
+                        <td style={{ fontWeight: 'var(--weight-medium)', color: 'var(--color-primary)' }}>{req.from}</td>
+                        <td style={{ color: 'var(--color-text-secondary)' }}>{req.service}</td>
+                        <td className="col-location" style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-xs)' }}>{req.location}</td>
+                        <td className="col-date" style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-xs)', whiteSpace: 'nowrap' }}>
+                          {formatDate(req.date)}
+                        </td>
+                        <td>
+                          <span className={`status-badge ${req.status}`}>
+                            {STATUS_LABELS[req.status]}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
 
           {/* Quick actions */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 'var(--sp-5)' }}>
+          <div className="dashboard-quick-actions" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 'var(--sp-5)' }}>
             <Link to="/panel/servicios" className="card card-link" style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-4)', padding: 'var(--sp-5)', textDecoration: 'none' }}>
               <div style={{ width: 40, height: 40, borderRadius: 'var(--radius-md)', background: 'var(--color-cta-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-cta)', flexShrink: 0 }}>
                 <IconPackage size={20} />

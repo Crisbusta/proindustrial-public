@@ -1350,6 +1350,32 @@ ul, ol {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   overflow: hidden;
+  width: 100%;
+}
+
+/* Desktop: show table, hide mobile cards */
+.panel-table-desktop { display: block; }
+.panel-mobile-list   { display: none; flex-direction: column; gap: 0; }
+
+/* Mobile card styles */
+.panel-mobile-card {
+  padding: var(--sp-4);
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  background: var(--color-surface);
+}
+.panel-mobile-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+.panel-mobile-card-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
 }
 
 .panel-table {
@@ -1818,14 +1844,39 @@ ul, ol {
     padding: 0 var(--sp-4);
   }
 
-  /* Table — horizontal scroll on mobile */
+  /* Hard stop: no horizontal scroll from panel content */
+  .panel-main { overflow-x: hidden; }
+
+  /* Table — allow horizontal scroll inside wrapper only */
   .panel-table-wrapper {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    width: 100%;
   }
-  .panel-table {
-    min-width: 480px;
+
+  /* Dashboard table: hide Ubicación + Fecha columns on mobile */
+  .panel-table .col-location,
+  .panel-table .col-date { display: none; }
+
+  /* Services table: hide on mobile, show card list */
+  .panel-table-desktop { display: none; }
+  .panel-mobile-list   { display: flex; }
+
+  /* Topbar: allow wrapping on narrow viewports */
+  .panel-topbar { flex-wrap: wrap; gap: 8px; height: auto; min-height: 56px; padding: var(--sp-3) var(--sp-4); }
+  .panel-topbar-right { flex-shrink: 0; }
+
+  /* Hide stats badge on Dashboard topbar */
+  .panel-topbar-badge-mobile { display: none; }
+
+  /* Delete dialog: prevent overflow */
+  .panel-delete-dialog {
+    max-width: calc(100vw - 32px) !important;
+    width: calc(100vw - 32px) !important;
   }
+
+  /* Quick actions: single column on mobile */
+  .dashboard-quick-actions { grid-template-columns: 1fr !important; }
 
   /* Inbox tabs — less side padding */
   .inbox-tabs {
