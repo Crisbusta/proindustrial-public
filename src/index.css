@@ -1907,6 +1907,11 @@ ul, ol {
     display: inline-flex !important;
   }
 
+  /* Inbox detail: ensure last action clears fixed nav bar (60px) */
+  .inbox-detail {
+    padding-bottom: calc(var(--sp-8) + 60px) !important;
+  }
+
   /* Sidebar content layouts — stack on mobile */
   .profile-content {
     grid-template-columns: 1fr;
