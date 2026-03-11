@@ -103,6 +103,25 @@ export default function PanelLayout() {
       <main className="panel-main">
         <Outlet />
       </main>
+
+      {/* ── Mobile bottom nav ─────────────────────────── */}
+      <nav className="panel-bottom-nav" aria-label="Navegación móvil del panel">
+        {navItems.map(({ to, label, Icon }) => (
+          <NavLink
+            key={to}
+            to={to}
+            className={({ isActive }) => `panel-bottom-nav-item${isActive ? ' active' : ''}`}
+          >
+            <Icon size={20} />
+            {label.replace('Perfil de empresa', 'Perfil')}
+          </NavLink>
+        ))}
+        <button className="panel-bottom-nav-item" onClick={logout}>
+          <IconLogOut size={20} />
+          Salir
+        </button>
+      </nav>
+
     </div>
   )
 }

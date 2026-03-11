@@ -78,7 +78,7 @@ export default function CompanyProfile() {
 
       <main>
         <div className="container" style={{ paddingTop: 'var(--sp-10)', paddingBottom: 'var(--sp-16)' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 'var(--sp-8)', alignItems: 'start' }}>
+          <div className="profile-content">
 
             {/* Main Content */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-8)' }}>

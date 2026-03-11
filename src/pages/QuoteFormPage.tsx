@@ -239,7 +239,7 @@ export default function QuoteFormPage() {
               </fieldset>
 
               {/* Submit */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 'var(--sp-4)', paddingTop: 'var(--sp-2)', borderTop: '1px solid var(--color-border)' }}>
+              <div className="form-actions">
                 <Link to={company ? `/empresas/${company.slug}` : '/'} className="btn btn-ghost">
                   Cancelar
                 </Link>

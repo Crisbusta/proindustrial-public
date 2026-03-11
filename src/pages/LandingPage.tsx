@@ -166,7 +166,7 @@ export default function LandingPage() {
           aria-label="Garantías de la plataforma"
         >
           <div className="container">
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 'var(--sp-8)', textAlign: 'center' }}>
+            <div className="trust-grid">
               {[
                 { title: 'Proveedores verificados', desc: 'Empresas con historial y referencias comprobables en la industria chilena.' },
                 { title: 'Contacto directo', desc: 'Sin intermediarios. Contacta directamente al proveedor que necesitas.' },

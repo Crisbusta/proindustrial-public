@@ -102,7 +102,7 @@ export default function RegisterProviderPage() {
 
       <main>
         <div className="container" style={{ paddingTop: 'var(--sp-10)', paddingBottom: 'var(--sp-16)' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 'var(--sp-12)', alignItems: 'start' }}>
+          <div className="register-layout">
 
             {/* Form */}
             <form onSubmit={handleSubmit} noValidate aria-label="Formulario de registro de proveedor">
