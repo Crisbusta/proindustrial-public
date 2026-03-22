@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { IconCheck, IconShield, IconX } from '../../components/Icons'
-import { approveRegistration, fetchAdminRegistrations, rejectRegistration } from '../../api/client'
+import { approveRegistration, deleteApprovedCompany, fetchAdminRegistrations, rejectRegistration } from '../../api/client'
 import type { AdminApprovalResponse, AdminRegistration } from '../../types'
 
 type Filter = 'pending' | 'approved' | 'rejected'
@@ -41,14 +41,21 @@ export default function AdminRegistrationsPage() {
     [registrations, selectedId],
   )
 
-  const runAction = async (action: 'approve' | 'reject') => {
+  const runAction = async (action: 'approve' | 'reject' | 'delete-approved') => {
     if (!selected) return
+    if (action === 'delete-approved') {
+      const confirmed = window.confirm(`Eliminar por completo la empresa aprobada ${selected.companyName}? Esta acción borra empresa, usuario, solicitudes asociadas y el registro.`)
+      if (!confirmed) return
+    }
     setWorkingId(selected.id)
     setError('')
     try {
       if (action === 'approve') {
         const result = await approveRegistration(selected.id)
         setApproval(result)
+      } else if (action === 'delete-approved') {
+        await deleteApprovedCompany(selected.id)
+        setApproval(null)
       } else {
         await rejectRegistration(selected.id)
       }
@@ -217,6 +224,21 @@ export default function AdminRegistrationsPage() {
                     >
                       <IconX size={16} />
                       Rechazar
+                    </button>
+                  </div>
+                )}
+
+                {selected.status === 'approved' && (
+                  <div style={{ display: 'flex', gap: 'var(--sp-3)', flexWrap: 'wrap' }}>
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      onClick={() => runAction('delete-approved')}
+                      disabled={workingId === selected.id}
+                      style={{ background: '#FEF2F2', borderColor: '#FCA5A5', color: '#B91C1C' }}
+                    >
+                      <IconX size={16} />
+                      Eliminar empresa aprobada
                     </button>
                   </div>
                 )}

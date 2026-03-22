@@ -196,3 +196,6 @@ export const approveRegistration = (id: string): Promise<AdminApprovalResponse> 
 
 export const rejectRegistration = (id: string): Promise<ProviderRegistrationResponse> =>
   authPost(`/admin/registrations/${id}/reject`, {}, 'adminToken')
+
+export const deleteApprovedCompany = (id: string): Promise<{ ok: boolean }> =>
+  authDelete(`/admin/registrations/${id}/company`, 'adminToken')
