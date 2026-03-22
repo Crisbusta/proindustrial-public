@@ -61,7 +61,18 @@ El proyecto está configurado para deploy en **Vercel** y **Railway**.
 npx vercel
 ```
 
+Producción web:
+
+- El frontend mantiene llamadas relativas a `/api`.
+- `vercel.json` hace rewrite de `/api/*` hacia `https://proindustrial-backend-production.up.railway.app/api/*`.
+- No hace falta definir `VITE_API_URL` en Vercel mientras uses este rewrite.
+
 **Railway**: conecta el repositorio y Railway detecta automáticamente la configuración en `nixpacks.toml`.
+
+Para que funcione online, el backend en Railway debe tener:
+
+- `CORS_ORIGIN=https://TU-FRONTEND.vercel.app`
+- `APP_BASE_URL=https://TU-FRONTEND.vercel.app`
 
 ## Cuentas demo (panel)
 
