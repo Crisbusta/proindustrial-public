@@ -1,25 +1,10 @@
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { IconInbox, IconPackage, IconUser, IconArrowRight, IconShield } from '../../components/Icons'
-import { usePanelCompany } from './PanelLayout'
+import { fetchDashboardStats, fetchPanelQuotes, fetchPanelProfile } from '../../api/client'
+import type { DashboardStats, QuoteRequestResponse, Company } from '../../types'
 
-interface QuoteRequest {
-  id: string
-  from: string
-  service: string
-  location: string
-  date: string
-  status: 'new' | 'read' | 'responded'
-}
-
-const MOCK_REQUESTS: QuoteRequest[] = [
-  { id: 'req-1', from: 'Constructora Norte S.A.', service: 'Termofusión PEAD DN110', location: 'Antofagasta', date: '2026-03-10', status: 'new' },
-  { id: 'req-2', from: 'Minera Atacama Ltda.', service: 'Tuberías industriales a presión', location: 'Calama', date: '2026-03-09', status: 'new' },
-  { id: 'req-3', from: 'Hidráulica del Norte SpA', service: 'Termofusión PEAD DN63', location: 'Iquique', date: '2026-03-07', status: 'read' },
-  { id: 'req-4', from: 'Constructora Sur Ltda.', service: 'Reparación red agua potable', location: 'Temuco', date: '2026-03-04', status: 'responded' },
-  { id: 'req-5', from: 'Aguas del Pacífico S.A.', service: 'Termofusión PEAD DN160', location: 'Copiapó', date: '2026-02-28', status: 'responded' },
-]
-
-const STATUS_LABELS: Record<QuoteRequest['status'], string> = {
+const STATUS_LABELS: Record<QuoteRequestResponse['status'], string> = {
   new: 'Nueva',
   read: 'Vista',
   responded: 'Respondida',
@@ -28,28 +13,37 @@ const STATUS_LABELS: Record<QuoteRequest['status'], string> = {
 const formatDate = (iso: string) =>
   new Date(iso).toLocaleDateString('es-CL', { day: 'numeric', month: 'short' })
 
+function computeCompletion(company: Company): number {
+  const fields = [company.name, company.tagline, company.description, company.email, company.phone, company.location]
+  return Math.round((fields.filter(Boolean).length / fields.length) * 100)
+}
+
 export default function PanelDashboard() {
-  const company = usePanelCompany()
-  const newCount = MOCK_REQUESTS.filter(r => r.status === 'new').length
-  const servicesCount = company?.services.length ?? 0
-  const profilePct = company ? Math.round(
-    ([company.name, company.tagline, company.description, company.email, company.phone, company.location]
-      .filter(Boolean).length / 6) * 100
-  ) : 0
+  const [stats, setStats] = useState<DashboardStats | null>(null)
+  const [requests, setRequests] = useState<QuoteRequestResponse[]>([])
+  const [company, setCompany] = useState<Company | null>(null)
+
+  useEffect(() => {
+    fetchDashboardStats().then(setStats).catch(() => {})
+    fetchPanelQuotes().then(qs => setRequests(qs.slice(0, 5))).catch(() => {})
+    fetchPanelProfile().then(setCompany).catch(() => {})
+  }, [])
+
+  const profilePct = company ? computeCompletion(company) : 0
 
   const kpis = [
     {
       label: 'Solicitudes nuevas',
-      value: newCount,
+      value: stats?.newQuotes ?? '—',
       icon: IconInbox,
       iconBg: '#EFF6FF',
       iconColor: '#1D4ED8',
-      delta: `${MOCK_REQUESTS.length} solicitudes en total`,
+      delta: stats ? `${stats.totalQuotes} solicitudes en total` : '',
       to: '/panel/solicitudes',
     },
     {
       label: 'Servicios publicados',
-      value: servicesCount,
+      value: stats?.totalServices ?? '—',
       icon: IconPackage,
       iconBg: '#F0FDF4',
       iconColor: '#166534',
@@ -58,7 +52,7 @@ export default function PanelDashboard() {
     },
     {
       label: 'Perfil completado',
-      value: `${profilePct}%`,
+      value: company ? `${profilePct}%` : '—',
       icon: IconUser,
       iconBg: profilePct < 80 ? '#FFF7ED' : '#F0FDF4',
       iconColor: profilePct < 80 ? '#C2410C' : '#166534',
@@ -66,6 +60,8 @@ export default function PanelDashboard() {
       to: '/panel/perfil',
     },
   ]
+
+  const newCount = stats?.newQuotes ?? 0
 
   return (
     <>
@@ -108,7 +104,7 @@ export default function PanelDashboard() {
         </div>
 
         {/* Profile completion alert */}
-        {profilePct < 80 && (
+        {company && profilePct < 80 && (
           <div style={{ background: '#FFF7ED', border: '1px solid #FED7AA', borderRadius: 'var(--radius-lg)', padding: 'var(--sp-4) var(--sp-5)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--sp-8)', gap: 'var(--sp-4)', flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-3)' }}>
               <span style={{ color: '#C2410C' }}><IconShield size={18} /></span>
@@ -147,13 +143,15 @@ export default function PanelDashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {MOCK_REQUESTS.slice(0, 5).map(req => (
+                    {requests.map(req => (
                       <tr key={req.id}>
-                        <td style={{ fontWeight: 'var(--weight-medium)', color: 'var(--color-primary)' }}>{req.from}</td>
+                        <td style={{ fontWeight: 'var(--weight-medium)', color: 'var(--color-primary)' }}>
+                          {req.requesterCompany ?? req.requesterName}
+                        </td>
                         <td style={{ color: 'var(--color-text-secondary)' }}>{req.service}</td>
-                        <td className="col-location" style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-xs)' }}>{req.location}</td>
+                        <td className="col-location" style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-xs)' }}>{req.location ?? ''}</td>
                         <td className="col-date" style={{ color: 'var(--color-text-muted)', fontSize: 'var(--text-xs)', whiteSpace: 'nowrap' }}>
-                          {formatDate(req.date)}
+                          {formatDate(req.createdAt)}
                         </td>
                         <td>
                           <span className={`status-badge ${req.status}`}>

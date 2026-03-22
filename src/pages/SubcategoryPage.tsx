@@ -1,29 +1,41 @@
-import { useState, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, Navigate, Link } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import Breadcrumb from '../components/Breadcrumb'
 import CompanyCard from '../components/CompanyCard'
 import { CATEGORY_ICONS } from '../components/Icons'
-import { getCategoryGroup, getSubcategory, getCompaniesByCategory, REGIONS } from '../data/mockData'
+import { fetchCategoryGroups, fetchCompanies, fetchRegions } from '../api/client'
+import type { CategoryGroup, Company } from '../types'
 
 export default function SubcategoryPage() {
   const { groupSlug, subSlug } = useParams<{ groupSlug: string; subSlug: string }>()
   const [selectedRegion, setSelectedRegion] = useState('Todas las regiones')
+  const [groups, setGroups] = useState<CategoryGroup[]>([])
+  const [companies, setCompanies] = useState<Company[]>([])
+  const [regions, setRegions] = useState<string[]>(['Todas las regiones'])
+  const [loading, setLoading] = useState(true)
 
-  const group = groupSlug ? getCategoryGroup(groupSlug) : undefined
-  const sub = groupSlug && subSlug ? getSubcategory(groupSlug, subSlug) : undefined
+  useEffect(() => {
+    fetchCategoryGroups().then(setGroups).catch(() => {})
+    fetchRegions().then(setRegions).catch(() => {})
+  }, [])
 
-  const allCompanies = groupSlug ? getCompaniesByCategory(groupSlug) : []
+  useEffect(() => {
+    if (!groupSlug) return
+    setLoading(true)
+    fetchCompanies({ category: groupSlug, region: selectedRegion })
+      .then(setCompanies)
+      .catch(() => setCompanies([]))
+      .finally(() => setLoading(false))
+  }, [groupSlug, selectedRegion])
 
-  const filtered = useMemo(() => {
-    if (selectedRegion === 'Todas las regiones') return allCompanies
-    return allCompanies.filter(c => c.region === selectedRegion)
-  }, [allCompanies, selectedRegion])
+  const group = groups.find(g => g.slug === groupSlug)
+  const sub = group?.subcategories.find(s => s.slug === subSlug)
 
-  if (!group || !sub) return <Navigate to="/" replace />
+  if (!loading && groups.length > 0 && (!group || !sub)) return <Navigate to="/" replace />
 
-  const SubIcon = CATEGORY_ICONS[sub.icon] ?? CATEGORY_ICONS['building']
+  const SubIcon = CATEGORY_ICONS[(sub?.icon ?? 'building')] ?? CATEGORY_ICONS['building']
 
   return (
     <>
@@ -35,8 +47,8 @@ export default function SubcategoryPage() {
           <div className="page-header-top">
             <Breadcrumb crumbs={[
               { label: 'Inicio', to: '/' },
-              { label: group.name, to: '/#categorias' },
-              { label: sub.name },
+              { label: group?.name ?? '', to: '/#categorias' },
+              { label: sub?.name ?? '' },
             ]} />
           </div>
 
@@ -45,10 +57,10 @@ export default function SubcategoryPage() {
               <SubIcon size={26} />
             </div>
             <div>
-              <p className="label-sm" style={{ marginBottom: 'var(--sp-1)' }}>{group.name}</p>
-              <h1 className="page-title">{sub.name}</h1>
+              <p className="label-sm" style={{ marginBottom: 'var(--sp-1)' }}>{group?.name}</p>
+              <h1 className="page-title">{sub?.name}</h1>
               <p style={{ fontSize: 'var(--text-base)', color: 'var(--color-text-secondary)', marginTop: 'var(--sp-2)', maxWidth: 600, lineHeight: 1.65 }}>
-                {sub.description}
+                {sub?.description}
               </p>
             </div>
           </div>
@@ -70,20 +82,20 @@ export default function SubcategoryPage() {
               onChange={e => setSelectedRegion(e.target.value)}
               aria-label="Filtrar empresas por región"
             >
-              {REGIONS.map(r => (
+              {regions.map(r => (
                 <option key={r} value={r}>{r}</option>
               ))}
             </select>
             <span className="filter-count">
-              {filtered.length} {filtered.length === 1 ? 'empresa encontrada' : 'empresas encontradas'}
+              {companies.length} {companies.length === 1 ? 'empresa encontrada' : 'empresas encontradas'}
             </span>
           </div>
 
           {/* Company Grid */}
-          {filtered.length > 0 ? (
+          {companies.length > 0 ? (
             <div className="grid-2" style={{ marginTop: 'var(--sp-6)' }}>
-              {filtered.map(company => (
-                <CompanyCard key={company.id} company={company} />
+              {companies.map(company => (
+                <CompanyCard key={company.slug} company={company} />
               ))}
             </div>
           ) : (

@@ -1,11 +1,11 @@
-import { useState, FormEvent } from 'react'
+import { useState, useEffect, FormEvent } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import Breadcrumb from '../components/Breadcrumb'
 import { IconCheck, IconSend } from '../components/Icons'
-import { getCompanyBySlug, CATEGORIES } from '../data/mockData'
-import type { QuoteRequest } from '../types'
+import { fetchCompanyBySlug, fetchCategoryGroups, submitQuote } from '../api/client'
+import type { Company, CategoryGroup, QuoteRequest } from '../types'
 
 const EMPTY: QuoteRequest = {
   name: '',
@@ -19,14 +19,23 @@ const EMPTY: QuoteRequest = {
 
 export default function QuoteFormPage() {
   const { companySlug } = useParams<{ companySlug?: string }>()
-  const company = companySlug ? getCompanyBySlug(companySlug) : undefined
-
-  const [form, setForm] = useState<QuoteRequest>({
-    ...EMPTY,
-    service: company?.services[0] ?? '',
-  })
+  const [company, setCompany] = useState<Company | undefined>()
+  const [groups, setGroups] = useState<CategoryGroup[]>([])
+  const [form, setForm] = useState<QuoteRequest>(EMPTY)
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    if (companySlug) {
+      fetchCompanyBySlug(companySlug).then(c => {
+        setCompany(c)
+        setForm(prev => ({ ...prev, service: c.services[0] ?? '' }))
+      }).catch(() => {})
+    } else {
+      fetchCategoryGroups().then(setGroups).catch(() => {})
+    }
+  }, [companySlug])
 
   const set = (field: keyof QuoteRequest) => (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -35,10 +44,24 @@ export default function QuoteFormPage() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    // Simulate async (no real backend endpoint yet)
-    await new Promise(r => setTimeout(r, 800))
-    setLoading(false)
-    setSubmitted(true)
+    setError('')
+    try {
+      await submitQuote({
+        requesterName: form.name,
+        requesterCompany: form.company || undefined,
+        requesterEmail: form.email,
+        requesterPhone: form.phone || undefined,
+        service: form.service,
+        description: form.description || undefined,
+        location: form.location || undefined,
+        targetCompanyId: company?.id,
+      })
+      setSubmitted(true)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al enviar la solicitud')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const crumbs = [
@@ -196,8 +219,8 @@ export default function QuoteFormPage() {
                         ? company.services.map(svc => (
                             <option key={svc} value={svc}>{svc}</option>
                           ))
-                        : CATEGORIES.map(cat => (
-                            <option key={cat.slug} value={cat.name}>{cat.name}</option>
+                        : groups.map(g => (
+                            <option key={g.slug} value={g.name}>{g.name}</option>
                           ))
                       }
                     </select>
@@ -237,6 +260,13 @@ export default function QuoteFormPage() {
                   </div>
                 </div>
               </fieldset>
+
+              {/* Error */}
+              {error && (
+                <div role="alert" style={{ background: '#FEF2F2', border: '1px solid #FCA5A5', borderRadius: 'var(--radius-md)', padding: 'var(--sp-3) var(--sp-4)', fontSize: 'var(--text-sm)', color: '#DC2626' }}>
+                  {error}
+                </div>
+              )}
 
               {/* Submit */}
               <div className="form-actions">

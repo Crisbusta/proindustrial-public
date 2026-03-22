@@ -1,63 +1,39 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { IconPlus, IconPencil, IconTrash, IconPackage, IconX, IconCheck } from '../../components/Icons'
-import { CATEGORIES } from '../../data/mockData'
-import { usePanelCompany } from './PanelLayout'
+import { fetchPanelServices, createService, updateService, deleteService, fetchCategoryGroups } from '../../api/client'
+import type { CompanyService, CategoryGroup } from '../../types'
 
-interface Service {
-  id: string
-  name: string
-  category: string
-  description: string
-  status: 'active' | 'draft'
-}
+type ServiceForm = { name: string; category: string; description: string; status: 'active' | 'draft' }
 
-type ServiceForm = Omit<Service, 'id'>
-
-const EMPTY_FORM: ServiceForm = {
-  name: '',
-  category: '',
-  description: '',
-  status: 'active',
-}
-
-function buildInitialServices(companyServices: string[]): Service[] {
-  return companyServices.map((svc, i) => {
-    const matchedCat = CATEGORIES.find(c =>
-      svc.toLowerCase().includes(c.name.toLowerCase().split(' ')[0])
-    )
-    return {
-      id: `svc-${i + 1}`,
-      name: svc,
-      category: matchedCat?.slug ?? CATEGORIES[0].slug,
-      description: '',
-      status: 'active' as const,
-    }
-  })
-}
+const EMPTY_FORM: ServiceForm = { name: '', category: '', description: '', status: 'active' }
 
 export default function PanelServices() {
-  const company = usePanelCompany()
-
-  const [services, setServices] = useState<Service[]>(() =>
-    company ? buildInitialServices(company.services) : []
-  )
-
+  const [services, setServices] = useState<CompanyService[]>([])
+  const [groups, setGroups] = useState<CategoryGroup[]>([])
   const [panelOpen, setPanelOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [form, setForm] = useState<ServiceForm>(EMPTY_FORM)
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    fetchPanelServices().then(setServices).catch(() => {})
+    fetchCategoryGroups().then(setGroups).catch(() => {})
+  }, [])
 
   const openAdd = () => {
     setForm(EMPTY_FORM)
     setEditingId(null)
+    setError('')
     setPanelOpen(true)
   }
 
-  const openEdit = (svc: Service) => {
-    setForm({ name: svc.name, category: svc.category, description: svc.description, status: svc.status })
+  const openEdit = (svc: CompanyService) => {
+    setForm({ name: svc.name, category: svc.category ?? '', description: svc.description ?? '', status: svc.status })
     setEditingId(svc.id)
+    setError('')
     setPanelOpen(true)
   }
 
@@ -71,39 +47,55 @@ export default function PanelServices() {
   ) => setForm(prev => ({ ...prev, [field]: e.target.value }))
 
   const handleSave = async () => {
-    if (!form.name.trim() || !form.category) return
+    if (!form.name.trim()) return
     setSaving(true)
-    await new Promise(r => setTimeout(r, 500))
-    setSaving(false)
-
-    if (editingId) {
-      setServices(prev => prev.map(s => s.id === editingId ? { ...s, ...form } : s))
-    } else {
-      const newId = `svc-${Date.now()}`
-      setServices(prev => [...prev, { id: newId, ...form }])
+    setError('')
+    try {
+      if (editingId) {
+        const updated = await updateService(editingId, { name: form.name, category: form.category || undefined, description: form.description || undefined, status: form.status })
+        setServices(prev => prev.map(s => s.id === editingId ? updated : s))
+      } else {
+        const created = await createService({ name: form.name, category: form.category || undefined, description: form.description || undefined })
+        setServices(prev => [...prev, created])
+      }
+      closePanel()
+      setSaved(true)
+      setTimeout(() => setSaved(false), 2500)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al guardar el servicio.')
+    } finally {
+      setSaving(false)
     }
-
-    closePanel()
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2500)
   }
 
-  const handleDelete = (id: string) => {
-    setServices(prev => prev.filter(s => s.id !== id))
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteService(id)
+      setServices(prev => prev.filter(s => s.id !== id))
+    } catch {}
     setDeleteId(null)
   }
 
-  const toggleStatus = (id: string) => {
-    setServices(prev =>
-      prev.map(s => s.id === id ? { ...s, status: s.status === 'active' ? 'draft' : 'active' } : s)
-    )
+  const toggleStatus = async (svc: CompanyService) => {
+    const newStatus = svc.status === 'active' ? 'draft' : 'active'
+    try {
+      const updated = await updateService(svc.id, { status: newStatus })
+      setServices(prev => prev.map(s => s.id === svc.id ? updated : s))
+    } catch {}
+  }
+
+  const allCats = groups.flatMap(g => [
+    { slug: g.slug, name: g.name },
+    ...g.subcategories.map(s => ({ slug: s.slug, name: `${g.name} › ${s.name}` })),
+  ])
+
+  const getCategoryName = (slug: string | null) => {
+    if (!slug) return ''
+    return allCats.find(c => c.slug === slug)?.name ?? slug
   }
 
   const activeCount = services.filter(s => s.status === 'active').length
   const draftCount = services.filter(s => s.status === 'draft').length
-
-  const getCategoryName = (slug: string) =>
-    CATEGORIES.find(c => c.slug === slug)?.name ?? slug
 
   return (
     <>
@@ -165,7 +157,7 @@ export default function PanelServices() {
                           </p>
                         </td>
                         <td>
-                          <span className="badge badge-gray">{getCategoryName(svc.category)}</span>
+                          {svc.category && <span className="badge badge-gray">{getCategoryName(svc.category)}</span>}
                         </td>
                         <td style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--text-xs)', maxWidth: 220 }}>
                           {svc.description
@@ -175,7 +167,7 @@ export default function PanelServices() {
                         </td>
                         <td>
                           <button
-                            onClick={() => toggleStatus(svc.id)}
+                            onClick={() => toggleStatus(svc)}
                             className={`status-badge ${svc.status}`}
                             style={{ border: 'none', cursor: 'pointer', background: svc.status === 'active' ? '#F0FDF4' : 'var(--color-surface-2)' }}
                             title={svc.status === 'active' ? 'Clic para pasar a borrador' : 'Clic para activar'}
@@ -229,9 +221,9 @@ export default function PanelServices() {
                     </div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-3)' }}>
-                    <span className="badge badge-gray">{getCategoryName(svc.category)}</span>
+                    {svc.category && <span className="badge badge-gray">{getCategoryName(svc.category)}</span>}
                     <button
-                      onClick={() => toggleStatus(svc.id)}
+                      onClick={() => toggleStatus(svc)}
                       className={`status-badge ${svc.status}`}
                       style={{ border: 'none', cursor: 'pointer', background: svc.status === 'active' ? '#F0FDF4' : 'var(--color-surface-2)' }}
                       aria-label={`Estado: ${svc.status === 'active' ? 'Activo' : 'Borrador'}. Clic para cambiar.`}
@@ -281,12 +273,10 @@ export default function PanelServices() {
               </div>
 
               <div className="form-group">
-                <label htmlFor="svc-category" className="form-label">
-                  Categoría <span className="required" aria-hidden="true">*</span>
-                </label>
+                <label htmlFor="svc-category" className="form-label">Categoría</label>
                 <select id="svc-category" className="form-select" value={form.category} onChange={set('category')}>
                   <option value="">Seleccionar categoría...</option>
-                  {CATEGORIES.map(cat => (
+                  {allCats.map(cat => (
                     <option key={cat.slug} value={cat.slug}>{cat.name}</option>
                   ))}
                 </select>
@@ -313,6 +303,12 @@ export default function PanelServices() {
                   <option value="draft">Borrador — no visible</option>
                 </select>
               </div>
+
+              {error && (
+                <div role="alert" style={{ background: '#FEF2F2', border: '1px solid #FCA5A5', borderRadius: 'var(--radius-md)', padding: 'var(--sp-3) var(--sp-4)', fontSize: 'var(--text-sm)', color: '#DC2626' }}>
+                  {error}
+                </div>
+              )}
             </div>
 
             <div className="slide-panel-footer">
@@ -320,7 +316,7 @@ export default function PanelServices() {
               <button
                 className="btn btn-primary"
                 onClick={handleSave}
-                disabled={saving || !form.name.trim() || !form.category}
+                disabled={saving || !form.name.trim()}
                 aria-busy={saving}
               >
                 {saving ? 'Guardando...' : editingId ? 'Guardar cambios' : 'Agregar servicio'}

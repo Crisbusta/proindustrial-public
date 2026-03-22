@@ -1,38 +1,44 @@
-import { useEffect } from 'react'
-import { Outlet, NavLink, useNavigate, Navigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Outlet, NavLink, useNavigate, Navigate, useLocation } from 'react-router-dom'
 import {
   IconLogoPipe, IconLayoutDashboard, IconUser,
   IconPackage, IconLogOut, IconInbox
 } from '../../components/Icons'
-import { COMPANIES } from '../../data/mockData'
+import { getMe } from '../../api/client'
+import type { Company } from '../../types'
 
-function getPanelAuth() {
-  try {
-    const raw = localStorage.getItem('panelAuth')
-    return raw ? JSON.parse(raw) as { companyId: string; companySlug: string } : null
-  } catch {
-    return null
-  }
-}
-
-export function usePanelCompany() {
-  const auth = getPanelAuth()
-  return auth ? COMPANIES.find(c => c.id === auth.companyId) ?? null : null
+function getToken(): string | null {
+  return localStorage.getItem('panelToken')
 }
 
 export default function PanelLayout() {
   const navigate = useNavigate()
-  const auth = getPanelAuth()
-  const company = auth ? COMPANIES.find(c => c.id === auth.companyId) : null
+  const location = useLocation()
+  const token = getToken()
+  const [company, setCompany] = useState<Company | null>(null)
+  const [mustChangePassword, setMustChangePassword] = useState(false)
 
   useEffect(() => {
-    if (!auth) navigate('/panel/login', { replace: true })
-  }, [auth, navigate])
+    if (!token) return
+    getMe().then(me => {
+      setCompany(me.company)
+      setMustChangePassword(me.mustChangePassword)
+      if (me.mustChangePassword && location.pathname !== '/panel/cambiar-contrasena') {
+        navigate('/panel/cambiar-contrasena', { replace: true })
+      }
+    }).catch(() => {
+      localStorage.removeItem('panelToken')
+      navigate('/panel/login', { replace: true })
+    })
+  }, [token, navigate, location.pathname])
 
-  if (!auth) return <Navigate to="/panel/login" replace />
+  if (!token) return <Navigate to="/panel/login" replace />
+  if (mustChangePassword && location.pathname !== '/panel/cambiar-contrasena') {
+    return <Navigate to="/panel/cambiar-contrasena" replace />
+  }
 
   const logout = () => {
-    localStorage.removeItem('panelAuth')
+    localStorage.removeItem('panelToken')
     navigate('/panel/login')
   }
 

@@ -1686,6 +1686,24 @@ ul, ol {
 }
 .status-badge.responded::before { background: #16A34A; }
 
+.status-badge.pending {
+  background: #FFF7ED;
+  color: #C2410C;
+}
+.status-badge.pending::before { background: #F97316; }
+
+.status-badge.approved {
+  background: #F0FDF4;
+  color: #166534;
+}
+.status-badge.approved::before { background: #16A34A; }
+
+.status-badge.rejected {
+  background: #FEF2F2;
+  color: #B91C1C;
+}
+.status-badge.rejected::before { background: #EF4444; }
+
 /* ── Progress Bar ────────────────────────────── */
 .progress-track {
   height: 6px;

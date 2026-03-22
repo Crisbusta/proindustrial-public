@@ -1,9 +1,16 @@
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { IconLogoPipe } from './Icons'
-import { CATEGORY_GROUPS } from '../data/mockData'
+import { fetchCategoryGroups } from '../api/client'
+import type { CategoryGroup } from '../types'
 
 export default function Footer() {
   const year = new Date().getFullYear()
+  const [groups, setGroups] = useState<CategoryGroup[]>([])
+
+  useEffect(() => {
+    fetchCategoryGroups().then(setGroups).catch(() => {})
+  }, [])
 
   return (
     <footer className="footer" aria-label="Pie de página">
@@ -29,7 +36,7 @@ export default function Footer() {
           <div>
             <p className="footer-col-title">Servicios</p>
             <nav className="footer-links" aria-label="Categorías de servicios">
-              {CATEGORY_GROUPS.map(group => (
+              {groups.map(group => (
                 <span key={group.slug} style={{ display: 'contents' }}>
                   <Link to={`/servicios/${group.slug}`} className="footer-link" style={{ fontWeight: 600 }}>
                     {group.name}

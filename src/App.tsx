@@ -12,6 +12,10 @@ import PanelDashboard from './pages/panel/PanelDashboard'
 import PanelInbox from './pages/panel/PanelInbox'
 import PanelProfile from './pages/panel/PanelProfile'
 import PanelServices from './pages/panel/PanelServices'
+import PanelChangePassword from './pages/panel/PanelChangePassword'
+import AdminLogin from './pages/admin/AdminLogin'
+import AdminLayout from './pages/admin/AdminLayout'
+import AdminRegistrationsPage from './pages/admin/AdminRegistrationsPage'
 
 export default function App() {
   return (
@@ -29,12 +33,19 @@ export default function App() {
 
         {/* ── Company panel ───────────────── */}
         <Route path="/panel/login" element={<PanelLogin />} />
+        <Route path="/panel/cambiar-contrasena" element={<PanelChangePassword />} />
         <Route path="/panel" element={<PanelLayout />}>
           <Route index element={<Navigate to="/panel/dashboard" replace />} />
           <Route path="dashboard" element={<PanelDashboard />} />
           <Route path="solicitudes" element={<PanelInbox />} />
           <Route path="servicios" element={<PanelServices />} />
           <Route path="perfil" element={<PanelProfile />} />
+        </Route>
+
+        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<Navigate to="/admin/registros" replace />} />
+          <Route path="registros" element={<AdminRegistrationsPage />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

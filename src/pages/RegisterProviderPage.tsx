@@ -1,11 +1,11 @@
-import { useState, FormEvent } from 'react'
+import { useState, useEffect, FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import Breadcrumb from '../components/Breadcrumb'
 import { IconCheck, IconArrowRight } from '../components/Icons'
-import { REGIONS, CATEGORIES } from '../data/mockData'
-import type { ProviderRegistration } from '../types'
+import { fetchRegions, fetchCategoryGroups, submitRegistration } from '../api/client'
+import type { CategoryGroup, ProviderRegistration } from '../types'
 
 const EMPTY: ProviderRegistration = {
   companyName: '',
@@ -27,6 +27,14 @@ export default function RegisterProviderPage() {
   const [form, setForm] = useState<ProviderRegistration>(EMPTY)
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [regions, setRegions] = useState<string[]>([])
+  const [groups, setGroups] = useState<CategoryGroup[]>([])
+
+  useEffect(() => {
+    fetchRegions().then(r => setRegions(r.filter(r => r !== 'Todas las regiones'))).catch(() => {})
+    fetchCategoryGroups().then(setGroups).catch(() => {})
+  }, [])
 
   const set = (field: keyof Omit<ProviderRegistration, 'services'>) => (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -44,9 +52,22 @@ export default function RegisterProviderPage() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    await new Promise(r => setTimeout(r, 800))
-    setLoading(false)
-    setSubmitted(true)
+    setError('')
+    try {
+      await submitRegistration({
+        companyName: form.companyName,
+        email: form.email,
+        phone: form.phone || undefined,
+        region: form.region || undefined,
+        services: form.services,
+        description: form.description || undefined,
+      })
+      setSubmitted(true)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al enviar el registro')
+    } finally {
+      setLoading(false)
+    }
   }
 
   if (submitted) {
@@ -64,7 +85,7 @@ export default function RegisterProviderPage() {
               </h1>
               <p style={{ fontSize: 'var(--text-base)', color: 'var(--color-text-secondary)', lineHeight: 1.65 }}>
                 Hemos recibido la información de <strong>{form.companyName}</strong>.
-                Nuestro equipo revisará tu registro y te contactará en las próximas 24 horas para activar tu perfil.
+                Tu empresa quedó en estado <strong>pendiente de revisión</strong>. Un administrador revisará el registro y, al aprobarlo, habilitará tu acceso inicial al panel.
               </p>
               <div style={{ marginTop: 'var(--sp-8)' }}>
                 <Link to="/" className="btn btn-primary">
@@ -174,7 +195,7 @@ export default function RegisterProviderPage() {
                         required
                       >
                         <option value="">Seleccionar región...</option>
-                        {REGIONS.slice(1).map(r => (
+                        {regions.map(r => (
                           <option key={r} value={r}>{r}</option>
                         ))}
                       </select>
@@ -190,7 +211,7 @@ export default function RegisterProviderPage() {
                     Selecciona todas las categorías que apliquen a tu empresa.
                   </p>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 'var(--sp-3)' }}>
-                    {CATEGORIES.map(cat => {
+                    {groups.map(cat => {
                       const selected = form.services.includes(cat.slug)
                       return (
                         <label
@@ -260,6 +281,11 @@ export default function RegisterProviderPage() {
                   </div>
                 </fieldset>
 
+                {error && (
+                  <div role="alert" style={{ background: '#FEF2F2', border: '1px solid #FCA5A5', borderRadius: 'var(--radius-md)', padding: 'var(--sp-3) var(--sp-4)', fontSize: 'var(--text-sm)', color: '#DC2626' }}>
+                    {error}
+                  </div>
+                )}
                 <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: 'var(--sp-2)', borderTop: '1px solid var(--color-border)' }}>
                   <button
                     type="submit"

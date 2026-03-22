@@ -1,7 +1,7 @@
 import { useState, FormEvent } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { IconLogoPipe, IconCheck, IconEye, IconEyeOff } from '../../components/Icons'
-import { COMPANIES } from '../../data/mockData'
+import { login } from '../../api/client'
 
 const DEMO_ACCOUNTS = [
   { email: 'contacto@acerospacifico.cl', label: 'Proveedora Aceros del Pacífico' },
@@ -33,27 +33,15 @@ export default function PanelLogin() {
     }
 
     setLoading(true)
-    await new Promise(r => setTimeout(r, 700))
-
-    // Match email against company emails (mock)
-    const match = COMPANIES.find(
-      c => c.email === email.trim().toLowerCase()
-    ) ?? (
-      // Demo accounts
-      DEMO_ACCOUNTS.find(a => a.email === email.trim().toLowerCase())
-        ? COMPANIES[0]
-        : undefined
-    )
-
-    if (!match) {
+    try {
+      const response = await login(email.trim().toLowerCase(), password)
+      localStorage.setItem('panelToken', response.token)
+      navigate(response.mustChangePassword ? '/panel/cambiar-contrasena' : '/panel/dashboard')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Credenciales incorrectas.')
+    } finally {
       setLoading(false)
-      setError('Correo no encontrado o sin acceso de proveedor. Usa una cuenta de demo.')
-      return
     }
-
-    localStorage.setItem('panelAuth', JSON.stringify({ companyId: match.id, companySlug: match.slug }))
-    setLoading(false)
-    navigate('/panel/dashboard')
   }
 
   return (
@@ -163,14 +151,15 @@ export default function PanelLogin() {
           {/* Demo accounts */}
           <div style={{ marginTop: 'var(--sp-8)', padding: 'var(--sp-5)', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)' }}>
             <p style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-text-muted)', marginBottom: 'var(--sp-4)' }}>
-              Cuentas de demo (cualquier contraseña)
+              Cuentas de demo (contraseña: demo123)
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-2)' }}>
               {DEMO_ACCOUNTS.map(acc => (
                 <button
                   key={acc.email}
                   type="button"
-                  onClick={() => { setEmail(acc.email); setPassword('demo1234') }}
+                  data-testid="demo-account-btn"
+                  onClick={() => { setEmail(acc.email); setPassword('demo123') }}
                   style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', padding: 'var(--sp-3) var(--sp-4)', cursor: 'pointer', textAlign: 'left', transition: 'border-color var(--ease-fast), background var(--ease-fast)' }}
                   onMouseOver={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-cta)' }}
                   onMouseOut={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-border)' }}

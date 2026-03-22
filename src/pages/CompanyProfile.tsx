@@ -1,9 +1,11 @@
+import { useState, useEffect } from 'react'
 import { useParams, Navigate, Link } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import Breadcrumb from '../components/Breadcrumb'
 import { CATEGORY_ICONS, IconMapPin, IconPhone, IconMail, IconGlobe, IconCheck, IconArrowRight } from '../components/Icons'
-import { getCompanyBySlug, getCategoryBySlug } from '../data/mockData'
+import { fetchCompanyBySlug, fetchCategoryGroups } from '../api/client'
+import type { Company, CategoryGroup } from '../types'
 
 function initials(name: string): string {
   return name
@@ -16,11 +18,30 @@ function initials(name: string): string {
 
 export default function CompanyProfile() {
   const { slug } = useParams<{ slug: string }>()
-  const company = slug ? getCompanyBySlug(slug) : undefined
+  const [company, setCompany] = useState<Company | null>(null)
+  const [groups, setGroups] = useState<CategoryGroup[]>([])
+  const [loading, setLoading] = useState(true)
 
+  useEffect(() => {
+    if (!slug) return
+    Promise.all([
+      fetchCompanyBySlug(slug),
+      fetchCategoryGroups(),
+    ]).then(([c, g]) => {
+      setCompany(c)
+      setGroups(g)
+    }).catch(() => setCompany(null)).finally(() => setLoading(false))
+  }, [slug])
+
+  if (loading) return null
   if (!company) return <Navigate to="/" replace />
 
-  const categories = company.categories.map(getCategoryBySlug).filter(Boolean)
+  // Resolve category metadata by slug across all groups and subcategories
+  const allCategoryMeta = groups.flatMap(g => [
+    { slug: g.slug, name: g.name, icon: g.icon, companyCount: 0 },
+    ...g.subcategories.map(s => ({ slug: s.slug, name: s.name, icon: s.icon, companyCount: 0 })),
+  ])
+  const categories = company.categories.map(catSlug => allCategoryMeta.find(c => c.slug === catSlug)).filter(Boolean)
   const primaryCategory = categories[0]
 
   return (
@@ -136,7 +157,7 @@ export default function CompanyProfile() {
                           </div>
                           <div>
                             <p style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-primary)' }}>{cat.name}</p>
-                            <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', marginTop: 2 }}>{cat.companyCount} empresas</p>
+                            <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', marginTop: 2 }}>{cat!.slug}</p>
                           </div>
                         </Link>
                       )

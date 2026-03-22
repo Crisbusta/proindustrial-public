@@ -1,9 +1,11 @@
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import CategoryAccordion from '../components/CategoryAccordion'
 import CompanyCard from '../components/CompanyCard'
-import { CATEGORY_GROUPS, COMPANIES } from '../data/mockData'
+import { fetchCategoryGroups, fetchCompanies } from '../api/client'
+import type { CategoryGroup, Company } from '../types'
 import { IconArrowRight, IconSearch, IconBuilding, IconCheck } from '../components/Icons'
 
 const STEPS = [
@@ -31,7 +33,13 @@ const STATS = [
 ]
 
 export default function LandingPage() {
-  const featuredCompanies = COMPANIES.filter(c => c.featured)
+  const [categoryGroups, setCategoryGroups] = useState<CategoryGroup[]>([])
+  const [featuredCompanies, setFeaturedCompanies] = useState<Company[]>([])
+
+  useEffect(() => {
+    fetchCategoryGroups().then(setCategoryGroups).catch(() => {})
+    fetchCompanies({ featured: true }).then(setFeaturedCompanies).catch(() => {})
+  }, [])
 
   return (
     <>
@@ -99,7 +107,7 @@ export default function LandingPage() {
             </div>
 
             <div className="category-groups-grid">
-              {CATEGORY_GROUPS.map(group => (
+              {categoryGroups.map(group => (
                 <CategoryAccordion key={group.slug} group={group} />
               ))}
             </div>
@@ -154,7 +162,7 @@ export default function LandingPage() {
 
             <div className="grid-2">
               {featuredCompanies.slice(0, 4).map(company => (
-                <CompanyCard key={company.id} company={company} />
+                <CompanyCard key={company.slug} company={company} />
               ))}
             </div>
           </div>

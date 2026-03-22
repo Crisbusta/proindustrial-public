@@ -1,65 +1,90 @@
-import { useState, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { IconCheck, IconUser } from '../../components/Icons'
-import { CATEGORIES, REGIONS } from '../../data/mockData'
-import { usePanelCompany } from './PanelLayout'
-import type { Company } from '../../types'
+import { fetchPanelProfile, updatePanelProfile, fetchRegions, fetchCategoryGroups } from '../../api/client'
+import type { CategoryGroup } from '../../types'
 
-type ProfileForm = Pick<Company, 'name' | 'tagline' | 'description' | 'location' | 'region' | 'phone' | 'email' | 'categories'> & {
+interface ProfileForm {
+  name: string
+  tagline: string
+  description: string
+  location: string
+  region: string
+  phone: string
+  email: string
   website: string
   yearsActive: string
 }
 
 function computeCompletion(form: ProfileForm): number {
-  const fields: (keyof ProfileForm)[] = ['name', 'tagline', 'description', 'location', 'region', 'phone', 'email', 'categories']
-  const filled = fields.filter(f => {
-    const v = form[f]
-    return Array.isArray(v) ? v.length > 0 : Boolean(v)
-  })
+  const fields: (keyof ProfileForm)[] = ['name', 'tagline', 'description', 'location', 'region', 'phone', 'email']
+  const filled = fields.filter(f => Boolean(form[f]))
   return Math.round((filled.length / fields.length) * 100)
 }
 
 export default function PanelProfile() {
-  const company = usePanelCompany()
-
   const [form, setForm] = useState<ProfileForm>({
-    name: company?.name ?? '',
-    tagline: company?.tagline ?? '',
-    description: company?.description ?? '',
-    location: company?.location ?? '',
-    region: company?.region ?? '',
-    phone: company?.phone ?? '',
-    email: company?.email ?? '',
-    website: company?.website ?? '',
-    yearsActive: String(company?.yearsActive ?? ''),
-    categories: company?.categories ?? [],
+    name: '', tagline: '', description: '', location: '',
+    region: '', phone: '', email: '', website: '', yearsActive: '',
   })
-
+  const [regions, setRegions] = useState<string[]>([])
+  const [groups, setGroups] = useState<CategoryGroup[]>([])
   const [saved, setSaved] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    fetchPanelProfile().then(c => {
+      setForm({
+        name: c.name,
+        tagline: c.tagline,
+        description: c.description,
+        location: c.location,
+        region: c.region,
+        phone: c.phone,
+        email: c.email,
+        website: c.website ?? '',
+        yearsActive: c.yearsActive != null ? String(c.yearsActive) : '',
+      })
+    }).catch(() => {})
+    fetchRegions().then(rs => setRegions(rs.filter(r => r !== 'Todas las regiones'))).catch(() => {})
+    fetchCategoryGroups().then(setGroups).catch(() => {})
+  }, [])
 
   const set = (field: keyof ProfileForm) => (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => setForm(prev => ({ ...prev, [field]: e.target.value }))
 
-  const toggleCategory = (slug: string) => {
-    setForm(prev => ({
-      ...prev,
-      categories: prev.categories.includes(slug)
-        ? prev.categories.filter(s => s !== slug)
-        : [...prev.categories, slug],
-    }))
-  }
-
   const handleSave = useCallback(async () => {
     setSaving(true)
-    await new Promise(r => setTimeout(r, 700))
-    setSaving(false)
-    setSaved(true)
-    setTimeout(() => setSaved(false), 3000)
-  }, [])
+    setError('')
+    try {
+      await updatePanelProfile({
+        name: form.name || undefined,
+        tagline: form.tagline || undefined,
+        description: form.description || undefined,
+        location: form.location || undefined,
+        region: form.region || undefined,
+        phone: form.phone || undefined,
+        email: form.email || undefined,
+        website: form.website || undefined,
+        yearsActive: form.yearsActive ? Number(form.yearsActive) : undefined,
+      })
+      setSaved(true)
+      setTimeout(() => setSaved(false), 3000)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al guardar los cambios.')
+    } finally {
+      setSaving(false)
+    }
+  }, [form])
 
   const completion = computeCompletion(form)
   const completionColor = completion < 50 ? '#DC2626' : completion < 80 ? '#D97706' : 'var(--color-success)'
+
+  const allCats = groups.flatMap(g => [
+    { slug: g.slug, name: g.name },
+    ...g.subcategories.map(s => ({ slug: s.slug, name: s.name })),
+  ])
 
   return (
     <>
@@ -164,7 +189,7 @@ export default function PanelProfile() {
                 </label>
                 <select id="prof-region" className="form-select" value={form.region} onChange={set('region')}>
                   <option value="">Seleccionar región...</option>
-                  {REGIONS.slice(1).map(r => <option key={r} value={r}>{r}</option>)}
+                  {regions.map(r => <option key={r} value={r}>{r}</option>)}
                 </select>
               </div>
             </div>
@@ -195,37 +220,26 @@ export default function PanelProfile() {
           </div>
         </div>
 
-        {/* Section 4 — Especialidades */}
-        <div className="panel-section">
-          <div className="panel-section-header">
-            <h2 className="panel-section-title">Especialidades</h2>
-            <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>
-              Seleccionadas: {form.categories.length}
-            </p>
-          </div>
-          <div className="panel-section-body">
-            <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', marginBottom: 'var(--sp-5)', lineHeight: 1.6 }}>
-              Selecciona las categorías de servicio que ofrece tu empresa. Aparecerás en los listados de cada categoría seleccionada.
-            </p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 'var(--sp-3)' }}>
-              {CATEGORIES.map(cat => {
-                const checked = form.categories.includes(cat.slug)
-                return (
-                  <label
-                    key={cat.slug}
-                    className={`check-card${checked ? ' checked' : ''}`}
-                    onClick={() => toggleCategory(cat.slug)}
-                  >
-                    <span className="check-card-box">
-                      {checked && <IconCheck size={11} />}
-                    </span>
-                    <span>{cat.name}</span>
-                  </label>
-                )
-              })}
+        {/* Section 4 — Especialidades (display only, read from API) */}
+        {allCats.length > 0 && (
+          <div className="panel-section">
+            <div className="panel-section-header">
+              <h2 className="panel-section-title">Categorías disponibles</h2>
+            </div>
+            <div className="panel-section-body">
+              <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', lineHeight: 1.6 }}>
+                Las categorías en las que aparece tu empresa se gestionan a través de tus servicios publicados.
+              </p>
             </div>
           </div>
-        </div>
+        )}
+
+        {/* Error */}
+        {error && (
+          <div role="alert" style={{ background: '#FEF2F2', border: '1px solid #FCA5A5', borderRadius: 'var(--radius-md)', padding: 'var(--sp-3) var(--sp-4)', fontSize: 'var(--text-sm)', color: '#DC2626' }}>
+            {error}
+          </div>
+        )}
 
         {/* Save footer */}
         <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: 'var(--sp-2)' }}>

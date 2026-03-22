@@ -1,31 +1,44 @@
-import { useState, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, Navigate } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import Breadcrumb from '../components/Breadcrumb'
 import CompanyCard from '../components/CompanyCard'
 import { CATEGORY_ICONS } from '../components/Icons'
-import {
-  getCategoryBySlug,
-  getCompaniesByCategory,
-  REGIONS,
-} from '../data/mockData'
+import { fetchCategoryGroups, fetchCompanies, fetchRegions } from '../api/client'
+import type { CategoryGroup, Company } from '../types'
 
 export default function CategoryPage() {
   const { slug } = useParams<{ slug: string }>()
   const [selectedRegion, setSelectedRegion] = useState('Todas las regiones')
+  const [groups, setGroups] = useState<CategoryGroup[]>([])
+  const [companies, setCompanies] = useState<Company[]>([])
+  const [regions, setRegions] = useState<string[]>(['Todas las regiones'])
+  const [loading, setLoading] = useState(true)
 
-  const category = slug ? getCategoryBySlug(slug) : undefined
-  const allCompanies = slug ? getCompaniesByCategory(slug) : []
+  useEffect(() => {
+    fetchCategoryGroups().then(setGroups).catch(() => {})
+    fetchRegions().then(setRegions).catch(() => {})
+  }, [])
 
-  const filtered = useMemo(() => {
-    if (selectedRegion === 'Todas las regiones') return allCompanies
-    return allCompanies.filter(c => c.region === selectedRegion)
-  }, [allCompanies, selectedRegion])
+  useEffect(() => {
+    if (!slug) return
+    setLoading(true)
+    fetchCompanies({ category: slug, region: selectedRegion })
+      .then(setCompanies)
+      .catch(() => setCompanies([]))
+      .finally(() => setLoading(false))
+  }, [slug, selectedRegion])
 
-  if (!category) return <Navigate to="/" replace />
+  // Find category/group by slug across all groups and their subcategories
+  const category = groups.flatMap(g => [
+    { slug: g.slug, name: g.name, description: g.description, icon: g.icon, companyCount: 0 },
+    ...g.subcategories.map(s => ({ slug: s.slug, name: s.name, description: s.description, icon: s.icon, companyCount: 0 })),
+  ]).find(c => c.slug === slug)
 
-  const Icon = CATEGORY_ICONS[category.icon] ?? CATEGORY_ICONS['building']
+  if (!loading && !category && groups.length > 0) return <Navigate to="/" replace />
+
+  const Icon = CATEGORY_ICONS[(category?.icon ?? 'building')] ?? CATEGORY_ICONS['building']
 
   return (
     <>
@@ -38,7 +51,7 @@ export default function CategoryPage() {
             <Breadcrumb crumbs={[
               { label: 'Inicio', to: '/' },
               { label: 'Servicios', to: '/#categorias' },
-              { label: category.name },
+              { label: category?.name ?? '' },
             ]} />
           </div>
 
@@ -47,9 +60,9 @@ export default function CategoryPage() {
               <Icon size={26} />
             </div>
             <div>
-              <h1 className="page-title">{category.name}</h1>
+              <h1 className="page-title">{category?.name}</h1>
               <p style={{ fontSize: 'var(--text-base)', color: 'var(--color-text-secondary)', marginTop: 'var(--sp-2)', maxWidth: 600, lineHeight: 1.65 }}>
-                {category.description}
+                {category?.description}
               </p>
             </div>
           </div>
@@ -71,21 +84,21 @@ export default function CategoryPage() {
               onChange={e => setSelectedRegion(e.target.value)}
               aria-label="Filtrar empresas por región"
             >
-              {REGIONS.map(r => (
+              {regions.map(r => (
                 <option key={r} value={r}>{r}</option>
               ))}
             </select>
 
             <span className="filter-count">
-              {filtered.length} {filtered.length === 1 ? 'empresa encontrada' : 'empresas encontradas'}
+              {companies.length} {companies.length === 1 ? 'empresa encontrada' : 'empresas encontradas'}
             </span>
           </div>
 
           {/* Company Grid */}
-          {filtered.length > 0 ? (
+          {companies.length > 0 ? (
             <div className="grid-2" style={{ marginTop: 'var(--sp-6)' }}>
-              {filtered.map(company => (
-                <CompanyCard key={company.id} company={company} />
+              {companies.map(company => (
+                <CompanyCard key={company.slug} company={company} />
               ))}
             </div>
           ) : (

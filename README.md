@@ -31,6 +31,15 @@ Panel privado para que las empresas proveedoras administren su presencia en el d
 | `/panel/servicios` | Gestión de servicios publicados (agregar, editar, eliminar) |
 | `/panel/perfil` | Configuración del perfil público de la empresa |
 
+## Backoffice admin (`/admin`)
+
+Backoffice interno para revisar registros de nuevas empresas proveedoras.
+
+| Ruta | Descripción |
+|------|-------------|
+| `/admin/login` | Acceso admin seed |
+| `/admin/registros` | Revisión y aprobación/rechazo de registros |
+
 ## Correr en local
 
 ```bash
@@ -38,6 +47,10 @@ npm install
 npm run dev
 # → http://localhost:3001
 ```
+
+API local esperada por defecto: `http://localhost:8080`.
+
+Si necesitas apuntar a otra API, define `VITE_API_URL` antes de iniciar Vite.
 
 ## Deploy
 
@@ -58,7 +71,19 @@ npx vercel
 | Tuberías del Sur S.A. | `proyectos@tuberiasdelsur.cl` |
 | Electro Industrial SpA | `info@electroindustrial.cl` |
 
-Cualquier contraseña funciona en modo demo.
+La contraseña de las cuentas demo es `demo123`.
+
+## Credenciales admin
+
+- Email: `admin@proindustrial.local`
+- Contraseña: `demo123`
+
+## Aprobación y acceso inicial
+
+- Al aprobar un registro desde `/admin/registros`, se crea la empresa y el usuario proveedor.
+- La contraseña inicial del proveedor es `demo123`.
+- En el primer login, el proveedor debe cambiar la contraseña antes de entrar al panel.
+- Si el backend tiene SMTP configurado, se envía un correo automático con el acceso inicial.
 
 ## Estructura
 
@@ -76,3 +101,7 @@ src/
 ├── types/index.ts
 └── index.css         # Design system completo con CSS variables
 ```
+
+## Nota de repositorio
+
+Dentro del monorepo, el flujo principal está organizado alrededor de `frontend-public` y `backend-public`. Los directorios bajo `deprecated/` se mantienen solo como referencia.
