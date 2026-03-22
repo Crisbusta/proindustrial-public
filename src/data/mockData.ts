@@ -1,4 +1,4 @@
-import type { Category, Company } from '../types'
+import type { Category, CategoryGroup, Company, Subcategory } from '../types'
 
 export const CATEGORIES: Category[] = [
   {
@@ -44,6 +44,124 @@ export const CATEGORIES: Category[] = [
     icon: 'building',
   },
 ]
+
+const SHARED_MAQUINARIAS_CHILDREN = [
+  { slug: 'arriendo', name: 'Arriendo' },
+  { slug: 'venta', name: 'Venta' },
+]
+
+const SHARED_ASESORIAS_CHILDREN = [
+  { slug: 'inspeccion', name: 'Inspección' },
+  { slug: 'calificacion', name: 'Calificación' },
+  { slug: 'informatica', name: 'Informática' },
+  { slug: 'contable', name: 'Contable' },
+]
+
+const TERMOFUSION_SUBCATEGORIES: Subcategory[] = [
+  {
+    slug: 'distribuidoras',
+    name: 'Distribuidoras Tubos',
+    description: 'Proveedores y distribuidores de tuberías PEAD, polipropileno y accesorios.',
+    icon: 'building',
+  },
+  {
+    slug: 'maquinarias',
+    name: 'Maquinarias',
+    description: 'Arriendo y venta de máquinas de termofusión y electrofusión.',
+    icon: 'wrench',
+    children: SHARED_MAQUINARIAS_CHILDREN,
+  },
+  {
+    slug: 'repuestos',
+    name: 'Repuestos',
+    description: 'Repuestos y accesorios para máquinas de termofusión.',
+    icon: 'package',
+  },
+  {
+    slug: 'servicios',
+    name: 'Servicios',
+    description: 'Servicios de movimiento de tierra, ingeniería y flete especializados.',
+    icon: 'network',
+    children: [
+      { slug: 'movimiento-tierra', name: 'Movimiento de Tierra' },
+      { slug: 'ingenieria', name: 'Ingeniería' },
+      { slug: 'flete', name: 'Flete' },
+    ],
+  },
+  {
+    slug: 'asesorias',
+    name: 'Asesorías',
+    description: 'Asesorías técnicas, inspección, calificación e informática.',
+    icon: 'shield',
+    children: SHARED_ASESORIAS_CHILDREN,
+  },
+]
+
+const GEOMEMBRANAS_SUBCATEGORIES: Subcategory[] = [
+  {
+    slug: 'distribuidoras',
+    name: 'Distribuidoras Membrana',
+    description: 'Proveedores y distribuidores de geomembranas HDPE y accesorios.',
+    icon: 'building',
+  },
+  {
+    slug: 'maquinarias',
+    name: 'Maquinarias',
+    description: 'Arriendo y venta de extrusoras y equipos de instalación de geomembranas.',
+    icon: 'wrench',
+    children: SHARED_MAQUINARIAS_CHILDREN,
+  },
+  {
+    slug: 'repuestos',
+    name: 'Repuestos',
+    description: 'Repuestos y equipos de medición para instalación de geomembranas.',
+    icon: 'package',
+  },
+  {
+    slug: 'servicios',
+    name: 'Servicios',
+    description: 'Servicios de ingeniería, movimiento de tierra y flete especializados.',
+    icon: 'network',
+    children: [
+      { slug: 'ingenieria', name: 'Ingeniería' },
+      { slug: 'movimiento-tierra', name: 'Movimiento Tierra' },
+      { slug: 'flete', name: 'Flete' },
+    ],
+  },
+  {
+    slug: 'asesorias',
+    name: 'Asesorías',
+    description: 'Asesorías técnicas, inspección, calificación e informática.',
+    icon: 'shield',
+    children: SHARED_ASESORIAS_CHILDREN,
+  },
+]
+
+export const CATEGORY_GROUPS: CategoryGroup[] = [
+  {
+    slug: 'termofusion',
+    name: 'Termofusión',
+    description: 'Unión de tuberías PEAD y polipropileno mediante calor. Para proyectos de agua potable, riego y minería.',
+    icon: 'pipe',
+    subcategories: TERMOFUSION_SUBCATEGORIES,
+  },
+  {
+    slug: 'geomembranas',
+    name: 'Geomembranas',
+    description: 'Instalación de liners y geomembranas HDPE para impermeabilización de tranques, piscinas y rellenos.',
+    icon: 'layers',
+    subcategories: GEOMEMBRANAS_SUBCATEGORIES,
+  },
+]
+
+export function getCategoryGroup(slug: string) {
+  return CATEGORY_GROUPS.find(g => g.slug === slug)
+}
+
+export function getSubcategory(groupSlug: string, subSlug: string) {
+  const group = getCategoryGroup(groupSlug)
+  return group?.subcategories.find(s => s.slug === subSlug)
+}
 
 export const COMPANIES: Company[] = [
   {

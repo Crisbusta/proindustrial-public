@@ -6,6 +6,27 @@ export interface Category {
   icon: string // SVG path key
 }
 
+export interface SubSubcategory {
+  slug: string
+  name: string
+}
+
+export interface Subcategory {
+  slug: string
+  name: string
+  description: string
+  icon: string
+  children?: SubSubcategory[]
+}
+
+export interface CategoryGroup {
+  slug: string
+  name: string
+  description: string
+  icon: string
+  subcategories: Subcategory[]
+}
+
 export interface Company {
   id: string
   slug: string

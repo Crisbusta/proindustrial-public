@@ -447,6 +447,162 @@ ul, ol {
   font-weight: var(--weight-medium);
 }
 
+/* ── Category Groups Grid ────────────────────── */
+.category-groups-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--sp-5);
+  align-items: start;
+}
+
+/* ── Category Accordion ─────────────────────── */
+.category-accordion {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.category-accordion:hover,
+.category-accordion--open {
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-cta);
+}
+
+.category-accordion-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--sp-3);
+  padding: var(--sp-8) var(--sp-6) var(--sp-6);
+  cursor: pointer;
+  width: 100%;
+  background: none;
+  border: none;
+  color: inherit;
+}
+
+.category-accordion-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-lg);
+  background: var(--color-cta-light);
+  color: var(--color-cta);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.category-accordion:hover .category-accordion-icon,
+.category-accordion--open .category-accordion-icon {
+  background: var(--color-cta);
+  color: #fff;
+  transform: scale(1.05);
+}
+
+.category-accordion-name {
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-bold);
+  color: var(--color-text-primary);
+  line-height: 1.2;
+}
+
+.category-accordion-description {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  max-width: 280px;
+}
+
+.category-accordion-footer {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-top: var(--sp-1);
+}
+
+.category-accordion-cta {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--color-cta);
+}
+
+.category-accordion-chevron {
+  color: var(--color-cta);
+  flex-shrink: 0;
+  transition: transform 0.22s ease;
+}
+
+.category-accordion-chevron.expanded {
+  transform: rotate(180deg);
+}
+
+.category-accordion-body {
+  border-top: 1px solid var(--color-border);
+  padding: var(--sp-4) var(--sp-5);
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--sp-2);
+  background: var(--color-surface-2);
+}
+
+.category-accordion-subcategory {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  color: var(--color-text-primary);
+  transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  cursor: pointer;
+}
+
+.category-accordion-subcategory:hover {
+  border-color: var(--color-cta);
+  box-shadow: var(--shadow-sm);
+}
+
+.category-accordion-subcategory-name {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  flex: 1;
+}
+
+.category-accordion-subcategory-count {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  background: var(--color-surface-2);
+  padding: 2px var(--sp-2);
+  border-radius: var(--radius-sm);
+}
+
+@media (max-width: 680px) {
+  .category-groups-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .category-accordion-header {
+    padding: var(--sp-6) var(--sp-5) var(--sp-5);
+  }
+
+  .category-accordion-icon {
+    width: 52px;
+    height: 52px;
+  }
+
+  .category-accordion-name {
+    font-size: var(--text-xl);
+  }
+}
+
 /* ── Badge ──────────────────────────────────── */
 .badge {
   display: inline-flex;
@@ -972,6 +1128,19 @@ ul, ol {
   gap: var(--sp-3);
   font-size: var(--text-sm);
   color: var(--color-cta);
+}
+
+/* ── Subcategory Page Sections ──────────────── */
+.subcat-section-header {
+  padding-bottom: var(--sp-3);
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: var(--sp-4);
+}
+
+.subcat-section-title {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-primary);
 }
 
 /* ── Empty State ────────────────────────────── */

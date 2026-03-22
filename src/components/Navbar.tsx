@@ -7,7 +7,7 @@ export default function Navbar() {
   const navigate = useNavigate()
 
   const navLinks = [
-    { to: '/servicios/termofusion', label: 'Servicios' },
+    { to: '/#categorias', label: 'Servicios' },
     { to: '/#como-funciona', label: '¿Cómo funciona?' },
     { to: '/registrar', label: 'Registrar empresa' },
   ]

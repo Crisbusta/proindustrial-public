@@ -31,6 +31,7 @@ const icon = (path: string) =>
 export const IconMenu = icon('M3 6h18M3 12h18M3 18h18')
 export const IconX = icon('M6 18L18 6M6 6l12 12')
 export const IconChevronRight = icon('M9 5l7 7-7 7')
+export const IconChevronDown = icon('M19 9l-7 7-7-7')
 export const IconArrowRight = icon('M5 12h14M12 5l7 7-7 7')
 export const IconHome = icon('M3 9.75L12 3l9 6.75V21a.75.75 0 01-.75.75H15.75a.75.75 0 01-.75-.75v-4.5a.75.75 0 00-.75-.75h-4.5a.75.75 0 00-.75.75V21a.75.75 0 01-.75.75H3.75A.75.75 0 013 21V9.75z')
 
@@ -116,4 +117,6 @@ export const CATEGORY_ICONS: Record<string, (props: IconProps) => JSX.Element> =
   droplet: IconDroplet,
   wrench: IconWrench,
   building: IconBuildingFactory,
+  package: IconPackage,
+  shield: IconShield,
 }

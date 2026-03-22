@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { IconLogoPipe } from './Icons'
-import { CATEGORIES } from '../data/mockData'
+import { CATEGORY_GROUPS } from '../data/mockData'
 
 export default function Footer() {
   const year = new Date().getFullYear()
@@ -29,10 +29,17 @@ export default function Footer() {
           <div>
             <p className="footer-col-title">Servicios</p>
             <nav className="footer-links" aria-label="Categorías de servicios">
-              {CATEGORIES.slice(0, 5).map(cat => (
-                <Link key={cat.slug} to={`/servicios/${cat.slug}`} className="footer-link">
-                  {cat.name}
-                </Link>
+              {CATEGORY_GROUPS.map(group => (
+                <span key={group.slug} style={{ display: 'contents' }}>
+                  <Link to={`/servicios/${group.slug}`} className="footer-link" style={{ fontWeight: 600 }}>
+                    {group.name}
+                  </Link>
+                  {group.subcategories.map(sub => (
+                    <Link key={sub.slug} to={`/servicios/${group.slug}/${sub.slug}`} className="footer-link" style={{ paddingLeft: '0.75rem' }}>
+                      {sub.name}
+                    </Link>
+                  ))}
+                </span>
               ))}
             </nav>
           </div>

@@ -1,9 +1,9 @@
 import { Link } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
-import CategoryCard from '../components/CategoryCard'
+import CategoryAccordion from '../components/CategoryAccordion'
 import CompanyCard from '../components/CompanyCard'
-import { CATEGORIES, COMPANIES } from '../data/mockData'
+import { CATEGORY_GROUPS, COMPANIES } from '../data/mockData'
 import { IconArrowRight, IconSearch, IconBuilding, IconCheck } from '../components/Icons'
 
 const STEPS = [
@@ -26,7 +26,7 @@ const STEPS = [
 
 const STATS = [
   { value: '98+', label: 'Empresas registradas' },
-  { value: '6', label: 'Categorías de servicio' },
+  { value: '2', label: 'Categorías de servicio' },
   { value: '15', label: 'Regiones de cobertura' },
 ]
 
@@ -98,9 +98,9 @@ export default function LandingPage() {
               </p>
             </div>
 
-            <div className="grid-3" style={{ '--gap': 'var(--sp-5)' } as React.CSSProperties}>
-              {CATEGORIES.map(cat => (
-                <CategoryCard key={cat.slug} category={cat} />
+            <div className="category-groups-grid">
+              {CATEGORY_GROUPS.map(group => (
+                <CategoryAccordion key={group.slug} group={group} />
               ))}
             </div>
           </div>

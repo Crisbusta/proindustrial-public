@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import ScrollToTop from './components/ScrollToTop'
 import LandingPage from './pages/LandingPage'
 import CategoryPage from './pages/CategoryPage'
+import SubcategoryPage from './pages/SubcategoryPage'
 import CompanyProfile from './pages/CompanyProfile'
 import QuoteFormPage from './pages/QuoteFormPage'
 import RegisterProviderPage from './pages/RegisterProviderPage'
@@ -14,10 +16,12 @@ import PanelServices from './pages/panel/PanelServices'
 export default function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Routes>
         {/* ── Public site ─────────────────── */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/servicios/:slug" element={<CategoryPage />} />
+        <Route path="/servicios/:groupSlug/:subSlug" element={<SubcategoryPage />} />
         <Route path="/empresas/:slug" element={<CompanyProfile />} />
         <Route path="/cotizar" element={<QuoteFormPage />} />
         <Route path="/cotizar/:companySlug" element={<QuoteFormPage />} />
