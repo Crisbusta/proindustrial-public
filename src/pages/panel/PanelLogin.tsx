@@ -3,12 +3,6 @@ import { useNavigate, Link } from 'react-router-dom'
 import { IconLogoPipe, IconCheck, IconEye, IconEyeOff } from '../../components/Icons'
 import { login } from '../../api/client'
 
-const DEMO_ACCOUNTS = [
-  { email: 'contacto@acerospacifico.cl', label: 'Proveedora Aceros del Pacífico' },
-  { email: 'proyectos@tuberiasdelsur.cl', label: 'Tuberías del Sur S.A.' },
-  { email: 'info@electroindustrial.cl', label: 'Electro Industrial SpA' },
-]
-
 const FEATURES = [
   'Gestiona el perfil público de tu empresa',
   'Publica y administra tus servicios',
@@ -147,29 +141,6 @@ export default function PanelLogin() {
               {loading ? 'Verificando...' : 'Acceder al panel'}
             </button>
           </form>
-
-          {/* Demo accounts */}
-          <div style={{ marginTop: 'var(--sp-8)', padding: 'var(--sp-5)', background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)' }}>
-            <p style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-text-muted)', marginBottom: 'var(--sp-4)' }}>
-              Cuentas de demo (contraseña: demo123)
-            </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-2)' }}>
-              {DEMO_ACCOUNTS.map(acc => (
-                <button
-                  key={acc.email}
-                  type="button"
-                  data-testid="demo-account-btn"
-                  onClick={() => { setEmail(acc.email); setPassword('demo123') }}
-                  style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', padding: 'var(--sp-3) var(--sp-4)', cursor: 'pointer', textAlign: 'left', transition: 'border-color var(--ease-fast), background var(--ease-fast)' }}
-                  onMouseOver={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-cta)' }}
-                  onMouseOut={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--color-border)' }}
-                >
-                  <p style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-primary)' }}>{acc.label}</p>
-                  <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', marginTop: 2 }}>{acc.email}</p>
-                </button>
-              ))}
-            </div>
-          </div>
 
           <p style={{ marginTop: 'var(--sp-6)', fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', textAlign: 'center' }}>
             ¿Tu empresa no está registrada?{' '}

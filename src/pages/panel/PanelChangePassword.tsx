@@ -10,7 +10,7 @@ function getToken(): string | null {
 export default function PanelChangePassword() {
   const navigate = useNavigate()
   const token = getToken()
-  const [currentPassword, setCurrentPassword] = useState('demo123')
+  const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
@@ -47,7 +47,10 @@ export default function PanelChangePassword() {
 
     setLoading(true)
     try {
-      await changePassword(currentPassword, newPassword)
+      const result = await changePassword(currentPassword, newPassword)
+      if (result.token) {
+        localStorage.setItem('panelToken', result.token)
+      }
       setSaved(true)
       setTimeout(() => navigate('/panel/dashboard', { replace: true }), 1200)
     } catch (err) {

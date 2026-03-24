@@ -3,13 +3,10 @@ import { useNavigate } from 'react-router-dom'
 import { IconLogoPipe, IconShield, IconEye, IconEyeOff } from '../../components/Icons'
 import { adminLogin } from '../../api/client'
 
-const ADMIN_EMAIL = 'admin@proindustrial.local'
-const ADMIN_PASSWORD = 'demo123'
-
 export default function AdminLogin() {
   const navigate = useNavigate()
-  const [email, setEmail] = useState(ADMIN_EMAIL)
-  const [password, setPassword] = useState(ADMIN_PASSWORD)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -62,7 +59,7 @@ export default function AdminLogin() {
               Iniciar sesión
             </h2>
             <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', marginTop: 'var(--sp-2)' }}>
-              Credenciales seed para entorno local.
+              Acceso restringido a administradores.
             </p>
           </div>
 

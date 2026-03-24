@@ -140,7 +140,7 @@ export const adminLogin = (email: string, password: string): Promise<LoginRespon
 export const getAdminMe = (): Promise<AdminMeResponse> =>
   authGet('/admin/auth/me', 'adminToken')
 
-export const changePassword = (currentPassword: string, newPassword: string): Promise<{ ok: boolean }> =>
+export const changePassword = (currentPassword: string, newPassword: string): Promise<{ ok: boolean; token: string }> =>
   authPost('/auth/change-password', { currentPassword, newPassword })
 
 // ── Panel (JWT protected) ──────────────────────────────────────────────────
