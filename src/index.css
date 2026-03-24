@@ -1243,6 +1243,10 @@ ul, ol {
     display: none;
   }
 
+  .navbar-actions {
+    display: none;
+  }
+
   .navbar-menu-btn {
     display: flex;
     align-items: center;

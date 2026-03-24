@@ -37,8 +37,8 @@ export default function PanelLogin() {
       const response = await login(email.trim().toLowerCase(), password)
       localStorage.setItem('panelToken', response.token)
       navigate(response.mustChangePassword ? '/panel/cambiar-contrasena' : '/panel/dashboard')
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Credenciales incorrectas.')
+    } catch {
+      setError('Correo o contraseña incorrectos. Verifica tus datos e intenta nuevamente.')
     } finally {
       setLoading(false)
     }

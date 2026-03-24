@@ -121,8 +121,8 @@ export default function AdminRegistrationsPage() {
           ))}
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(320px, 420px) 1fr', gap: 'var(--sp-6)', alignItems: 'start' }}>
-          <section className="card" style={{ padding: 'var(--sp-4)' }}>
+        <div className={`inbox-panels${selectedId ? ' detail-open' : ''}`}>
+          <section className="card inbox-list" style={{ padding: 'var(--sp-4)' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-3)' }}>
               {loading && <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>Cargando registros...</p>}
               {!loading && registrations.length === 0 && (
@@ -159,9 +159,12 @@ export default function AdminRegistrationsPage() {
             </div>
           </section>
 
-          <section className="card" style={{ padding: 'var(--sp-6)' }}>
+          <section className="card inbox-detail" style={{ padding: 'var(--sp-6)' }}>
             {selected ? (
               <>
+                <button className="inbox-back-btn" onClick={() => setSelectedId(null)}>
+                  ← Volver a registros
+                </button>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 'var(--sp-4)', alignItems: 'flex-start', marginBottom: 'var(--sp-6)' }}>
                   <div>
                     <div style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--sp-2)', padding: '6px 12px', borderRadius: 999, background: '#EFF6FF', color: '#1D4ED8', fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-semibold)', marginBottom: 'var(--sp-3)' }}>

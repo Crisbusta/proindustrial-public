@@ -157,7 +157,7 @@ export default function CompanyProfile() {
                           </div>
                           <div>
                             <p style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-primary)' }}>{cat.name}</p>
-                            <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', marginTop: 2 }}>{cat!.slug}</p>
+                            <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', marginTop: 2 }}>Ver empresas →</p>
                           </div>
                         </Link>
                       )

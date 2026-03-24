@@ -72,6 +72,17 @@ export default function AdminLayout() {
       <main className="panel-main">
         <Outlet />
       </main>
+
+      <nav className="panel-bottom-nav" aria-label="Navegación móvil admin">
+        <NavLink to="/admin/registros" className={({ isActive }) => `panel-bottom-nav-item${isActive ? ' active' : ''}`}>
+          <IconInbox size={20} />
+          Registros
+        </NavLink>
+        <button className="panel-bottom-nav-item" onClick={logout}>
+          <IconLogOut size={20} />
+          Salir
+        </button>
+      </nav>
     </div>
   )
 }

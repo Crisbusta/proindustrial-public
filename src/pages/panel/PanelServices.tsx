@@ -85,8 +85,8 @@ export default function PanelServices() {
   }
 
   const allCats = groups.flatMap(g => [
-    { slug: g.slug, name: g.name },
-    ...g.subcategories.map(s => ({ slug: s.slug, name: `${g.name} › ${s.name}` })),
+    { slug: g.slug, name: g.name, key: `group-${g.slug}` },
+    ...g.subcategories.map(s => ({ slug: s.slug, name: `${g.name} › ${s.name}`, key: `${g.slug}/${s.slug}` })),
   ])
 
   const getCategoryName = (slug: string | null) => {
@@ -277,7 +277,7 @@ export default function PanelServices() {
                 <select id="svc-category" className="form-select" value={form.category} onChange={set('category')}>
                   <option value="">Seleccionar categoría...</option>
                   {allCats.map(cat => (
-                    <option key={cat.slug} value={cat.slug}>{cat.name}</option>
+                    <option key={cat.key} value={cat.slug}>{cat.name}</option>
                   ))}
                 </select>
               </div>
