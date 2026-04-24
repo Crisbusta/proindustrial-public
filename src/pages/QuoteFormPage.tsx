@@ -4,8 +4,8 @@ import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import Breadcrumb from '../components/Breadcrumb'
 import { IconCheck, IconSend } from '../components/Icons'
-import { fetchCompanyBySlug, fetchCategoryGroups, submitQuote } from '../api/client'
-import type { Company, CategoryGroup, QuoteRequest } from '../types'
+import { fetchCompanyBySlug, fetchCategoryGroups, fetchCompanyServices, submitQuote } from '../api/client'
+import type { Company, CategoryGroup, CompanyService, QuoteRequest } from '../types'
 
 const EMPTY: QuoteRequest = {
   name: '',
@@ -21,6 +21,7 @@ export default function QuoteFormPage() {
   const { companySlug } = useParams<{ companySlug?: string }>()
   const [company, setCompany] = useState<Company | undefined>()
   const [groups, setGroups] = useState<CategoryGroup[]>([])
+  const [panelServices, setPanelServices] = useState<CompanyService[]>([])
   const [form, setForm] = useState<QuoteRequest>(EMPTY)
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -28,9 +29,14 @@ export default function QuoteFormPage() {
 
   useEffect(() => {
     if (companySlug) {
-      fetchCompanyBySlug(companySlug).then(c => {
+      Promise.all([
+        fetchCompanyBySlug(companySlug),
+        fetchCompanyServices(companySlug),
+      ]).then(([c, svcs]) => {
         setCompany(c)
-        setForm(prev => ({ ...prev, service: c.services[0] ?? '' }))
+        setPanelServices(svcs)
+        const firstService = svcs[0]?.name ?? c.services[0] ?? ''
+        setForm(prev => ({ ...prev, service: firstService }))
       }).catch(() => {})
     } else {
       fetchCategoryGroups().then(setGroups).catch(() => {})
@@ -216,8 +222,8 @@ export default function QuoteFormPage() {
                     >
                       <option value="">Seleccionar servicio...</option>
                       {company
-                        ? company.services.map(svc => (
-                            <option key={svc} value={svc}>{svc}</option>
+                        ? (panelServices.length > 0 ? panelServices : company.services.map(s => ({ id: s, name: s }))).map(svc => (
+                            <option key={svc.id} value={svc.name}>{svc.name}</option>
                           ))
                         : groups.map(g => (
                             <option key={g.slug} value={g.name}>{g.name}</option>

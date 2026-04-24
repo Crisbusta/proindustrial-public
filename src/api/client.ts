@@ -104,6 +104,9 @@ export const fetchCompanies = (params?: { category?: string; region?: string; fe
 export const fetchCompanyBySlug = (slug: string): Promise<Company> =>
   get(`/companies/${slug}`)
 
+export const fetchCompanyServices = (slug: string): Promise<CompanyService[]> =>
+  get(`/companies/${slug}/services`)
+
 export const submitQuote = (body: {
   requesterName: string
   requesterCompany?: string
@@ -155,6 +158,12 @@ export const fetchPanelQuotes = (status?: string): Promise<QuoteRequestResponse[
 
 export const updateQuoteStatus = (id: string, status: string): Promise<{ ok: boolean }> =>
   authPatch(`/panel/quotes/${id}`, { status })
+
+export const replyToQuote = (id: string, note: string): Promise<QuoteRequestResponse> =>
+  authPost(`/panel/quotes/${id}/reply`, { note })
+
+export const closeQuote = (id: string, outcome: string, note?: string): Promise<QuoteRequestResponse> =>
+  authPost(`/panel/quotes/${id}/close`, { outcome, note: note ?? '' })
 
 export const fetchPanelServices = (): Promise<CompanyService[]> =>
   authGet('/panel/services')

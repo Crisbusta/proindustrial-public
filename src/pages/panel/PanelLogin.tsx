@@ -1,6 +1,6 @@
 import { useState, FormEvent } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { IconLogoPipe, IconCheck, IconEye, IconEyeOff } from '../../components/Icons'
+import { IconCheck, IconEye, IconEyeOff } from '../../components/Icons'
 import { login } from '../../api/client'
 
 const FEATURES = [
@@ -43,12 +43,9 @@ export default function PanelLogin() {
       {/* Brand side */}
       <div className="panel-login-brand">
         <div style={{ position: 'relative', zIndex: 1 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-3)', marginBottom: 'var(--sp-12)' }}>
-            <div className="navbar-logo-icon" style={{ width: 40, height: 40 }}>
-              <IconLogoPipe size={22} />
-            </div>
-            <span style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-bold)', color: '#fff', letterSpacing: '-0.01em' }}>
-              Pro<span style={{ color: 'var(--color-accent)' }}>Industrial</span>
+          <div style={{ marginBottom: 'var(--sp-12)' }}>
+            <span style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-bold)', color: '#fff', letterSpacing: '0.02em' }}>
+              PUNTO<span style={{ color: 'var(--color-accent)' }}>FUSIÓN</span>
             </span>
           </div>
 

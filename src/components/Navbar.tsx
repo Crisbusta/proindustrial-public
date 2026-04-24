@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
-import { IconLogoPipe, IconMenu, IconX } from './Icons'
+import { IconMenu, IconX } from './Icons'
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -16,13 +16,8 @@ export default function Navbar() {
     <header className="navbar">
       <div className="navbar-inner">
         {/* Logo */}
-        <Link to="/" className="navbar-logo" aria-label="ProIndustrial — inicio">
-          <div className="navbar-logo-icon">
-            <IconLogoPipe size={18} />
-          </div>
-          <span className="navbar-logo-text">
-            Pro<span>Industrial</span>
-          </span>
+        <Link to="/" className="navbar-logo" aria-label="PuntoFusión — inicio">
+          <img src="/logo.jpeg" alt="PuntoFusión" style={{ height: 36, objectFit: 'contain' }} />
         </Link>
 
         {/* Desktop Nav */}

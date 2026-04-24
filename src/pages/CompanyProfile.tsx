@@ -4,8 +4,8 @@ import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import Breadcrumb from '../components/Breadcrumb'
 import { CATEGORY_ICONS, IconMapPin, IconPhone, IconMail, IconGlobe, IconCheck, IconArrowRight } from '../components/Icons'
-import { fetchCompanyBySlug, fetchCategoryGroups } from '../api/client'
-import type { Company, CategoryGroup } from '../types'
+import { fetchCompanyBySlug, fetchCategoryGroups, fetchCompanyServices } from '../api/client'
+import type { Company, CategoryGroup, CompanyService } from '../types'
 
 function initials(name: string): string {
   return name
@@ -20,6 +20,7 @@ export default function CompanyProfile() {
   const { slug } = useParams<{ slug: string }>()
   const [company, setCompany] = useState<Company | null>(null)
   const [groups, setGroups] = useState<CategoryGroup[]>([])
+  const [panelServices, setPanelServices] = useState<CompanyService[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -27,9 +28,11 @@ export default function CompanyProfile() {
     Promise.all([
       fetchCompanyBySlug(slug),
       fetchCategoryGroups(),
-    ]).then(([c, g]) => {
+      fetchCompanyServices(slug),
+    ]).then(([c, g, svcs]) => {
       setCompany(c)
       setGroups(g)
+      setPanelServices(svcs)
     }).catch(() => setCompany(null)).finally(() => setLoading(false))
   }, [slug])
 
@@ -117,23 +120,40 @@ export default function CompanyProfile() {
               </section>
 
               {/* Services */}
-              <section aria-labelledby="services-title">
-                <h2 id="services-title" style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-primary)', marginBottom: 'var(--sp-4)' }}>
-                  Servicios ofrecidos
-                </h2>
-                <div className="card" style={{ padding: 'var(--sp-6)' }}>
-                  <ul style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-3)' }}>
-                    {company.services.map(svc => (
-                      <li key={svc} style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--sp-3)', fontSize: 'var(--text-sm)', color: 'var(--color-text)' }}>
-                        <span style={{ color: 'var(--color-cta)', marginTop: '2px', flexShrink: 0 }}>
-                          <IconCheck size={16} />
-                        </span>
-                        {svc}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </section>
+              {(panelServices.length > 0 || company.services.length > 0) && (
+                <section aria-labelledby="services-title">
+                  <h2 id="services-title" style={{ fontSize: 'var(--text-xl)', fontWeight: 'var(--weight-semibold)', color: 'var(--color-primary)', marginBottom: 'var(--sp-4)' }}>
+                    Servicios ofrecidos
+                  </h2>
+                  <div className="card" style={{ padding: 'var(--sp-6)' }}>
+                    <ul style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-4)' }}>
+                      {panelServices.length > 0
+                        ? panelServices.map(svc => (
+                            <li key={svc.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--sp-3)', fontSize: 'var(--text-sm)', color: 'var(--color-text)' }}>
+                              <span style={{ color: 'var(--color-cta)', marginTop: '2px', flexShrink: 0 }}>
+                                <IconCheck size={16} />
+                              </span>
+                              <div>
+                                <p style={{ fontWeight: 'var(--weight-medium)' }}>{svc.name}</p>
+                                {svc.description && (
+                                  <p style={{ color: 'var(--color-text-muted)', marginTop: 2 }}>{svc.description}</p>
+                                )}
+                              </div>
+                            </li>
+                          ))
+                        : company.services.map(svc => (
+                            <li key={svc} style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--sp-3)', fontSize: 'var(--text-sm)', color: 'var(--color-text)' }}>
+                              <span style={{ color: 'var(--color-cta)', marginTop: '2px', flexShrink: 0 }}>
+                                <IconCheck size={16} />
+                              </span>
+                              {svc}
+                            </li>
+                          ))
+                      }
+                    </ul>
+                  </div>
+                </section>
+              )}
 
               {/* Specialties */}
               {categories.length > 0 && (
@@ -235,7 +255,7 @@ export default function CompanyProfile() {
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--text-sm)' }}>
                       <span style={{ color: 'var(--color-text-muted)' }}>Servicios</span>
-                      <span style={{ fontWeight: 'var(--weight-semibold)', color: 'var(--color-text)' }}>{company.services.length}</span>
+                      <span style={{ fontWeight: 'var(--weight-semibold)', color: 'var(--color-text)' }}>{panelServices.length || company.services.length}</span>
                     </div>
                   </div>
                 </div>

@@ -1,5 +1,5 @@
 /* ─────────────────────────────────────────────
-   Design System — ProIndustrial
+   Design System — PuntoFusión
    Style: Swiss Minimalism / Industrial Trust
    ───────────────────────────────────────────── */
 
@@ -7,11 +7,11 @@
 
 /* ── Tokens ─────────────────────────────────── */
 :root {
-  /* Color — Navy/Steel/White palette */
-  --color-primary:        #0F172A;  /* dark navy    */
-  --color-secondary:      #334155;  /* steel gray   */
-  --color-cta:            #0369A1;  /* industrial blue */
-  --color-cta-hover:      #0284C7;
+  /* Color — PuntoFusión brand palette */
+  --color-primary:        #192D5F;  /* brand navy (PUNTO)  */
+  --color-secondary:      #475569;  /* steel gray          */
+  --color-cta:            #1570EF;  /* brand blue (FUSIÓN) */
+  --color-cta-hover:      #0E5FD8;
   --color-cta-light:      #EFF6FF;
 
   --color-bg:             #F8FAFC;  /* page background */

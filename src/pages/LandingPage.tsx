@@ -227,7 +227,7 @@ export default function LandingPage() {
                 <IconSearch size={16} />
                 Enviar solicitud abierta
               </Link>
-              <a href="mailto:hola@proindustrial.cl" className="btn btn-ghost">
+              <a href="mailto:hola@puntofusion.cl" className="btn btn-ghost">
                 Contactar al equipo
               </a>
             </div>

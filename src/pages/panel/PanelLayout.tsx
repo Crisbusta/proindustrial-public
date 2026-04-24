@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Outlet, NavLink, useNavigate, Navigate, useLocation } from 'react-router-dom'
 import {
-  IconLogoPipe, IconLayoutDashboard, IconUser,
+  IconLayoutDashboard, IconUser,
   IconPackage, IconLogOut, IconInbox
 } from '../../components/Icons'
 import { getMe } from '../../api/client'
@@ -55,11 +55,8 @@ export default function PanelLayout() {
       <nav className="panel-sidebar" aria-label="Panel de gestión">
         {/* Logo */}
         <div className="panel-sidebar-logo">
-          <div className="navbar-logo-icon" style={{ width: 30, height: 30 }}>
-            <IconLogoPipe size={16} />
-          </div>
-          <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-bold)', color: '#fff', letterSpacing: '-0.01em' }}>
-            Pro<span style={{ color: 'var(--color-accent)' }}>Industrial</span>
+          <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-bold)', color: '#fff', letterSpacing: '0.02em' }}>
+            PUNTO<span style={{ color: 'var(--color-accent)' }}>FUSIÓN</span>
           </span>
         </div>
 

@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { IconLogoPipe } from './Icons'
 import { fetchCategoryGroups } from '../api/client'
 import type { CategoryGroup } from '../types'
 
@@ -18,12 +17,9 @@ export default function Footer() {
         <div className="footer-grid">
           {/* Brand */}
           <div className="footer-brand">
-            <Link to="/" className="navbar-logo" style={{ marginBottom: 0 }}>
-              <div className="navbar-logo-icon">
-                <IconLogoPipe size={18} />
-              </div>
-              <span className="navbar-logo-text" style={{ color: '#fff' }}>
-                Pro<span>Industrial</span>
+            <Link to="/" style={{ textDecoration: 'none', marginBottom: 0, display: 'inline-block' }}>
+              <span style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--weight-bold)', color: '#fff', letterSpacing: '0.02em' }}>
+                PUNTO<span style={{ color: 'var(--color-accent)' }}>FUSIÓN</span>
               </span>
             </Link>
             <p>
@@ -68,8 +64,8 @@ export default function Footer() {
           <div>
             <p className="footer-col-title">Contacto</p>
             <div className="footer-links">
-              <a href="mailto:hola@proindustrial.cl" className="footer-link">
-                hola@proindustrial.cl
+              <a href="mailto:hola@puntofusion.cl" className="footer-link">
+                hola@puntofusion.cl
               </a>
               <span className="footer-link" style={{ cursor: 'default', opacity: 0.5 }}>
                 +56 2 2xxx xxxx
@@ -82,7 +78,7 @@ export default function Footer() {
         </div>
 
         <div className="footer-bottom">
-          <p>© {year} ProIndustrial. Todos los derechos reservados.</p>
+          <p>© {year} PuntoFusión. Todos los derechos reservados.</p>
           <p>Hecho en Chile para la industria</p>
         </div>
       </div>

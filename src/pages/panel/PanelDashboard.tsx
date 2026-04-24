@@ -83,7 +83,7 @@ export default function PanelDashboard() {
             Buenos días{company ? `, ${company.name.split(' ')[0]}` : ''}
           </h1>
           <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', marginTop: 'var(--sp-1)' }}>
-            Aquí tienes un resumen de la actividad reciente de tu empresa en ProIndustrial.
+            Aquí tienes un resumen de la actividad reciente de tu empresa en PuntoFusión.
           </p>
         </div>
 

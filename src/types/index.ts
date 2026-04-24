@@ -76,6 +76,11 @@ export interface QuoteRequestResponse {
   location: string | null
   targetCompanyId: string | null
   status: 'new' | 'read' | 'responded'
+  replyNote: string | null
+  repliedAt: string | null
+  outcome: 'won' | 'negotiating' | 'lost_price' | 'lost_other' | 'no_response' | 'cancelled' | 'no_capacity' | null
+  outcomeNote: string | null
+  closedAt: string | null
   createdAt: string
 }
 

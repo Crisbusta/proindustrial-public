@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Outlet, NavLink, useNavigate, Navigate } from 'react-router-dom'
-import { IconLogoPipe, IconShield, IconInbox, IconLogOut } from '../../components/Icons'
+import { IconShield, IconInbox, IconLogOut } from '../../components/Icons'
 import { getAdminMe } from '../../api/client'
 import type { AdminMeResponse } from '../../types'
 
@@ -32,11 +32,8 @@ export default function AdminLayout() {
     <div className="panel-layout">
       <nav className="panel-sidebar" aria-label="Backoffice admin">
         <div className="panel-sidebar-logo">
-          <div className="navbar-logo-icon" style={{ width: 30, height: 30 }}>
-            <IconLogoPipe size={16} />
-          </div>
-          <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-bold)', color: '#fff' }}>
-            Pro<span style={{ color: 'var(--color-accent)' }}>Industrial</span>
+          <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-bold)', color: '#fff', letterSpacing: '0.02em' }}>
+            PUNTO<span style={{ color: 'var(--color-accent)' }}>FUSIÓN</span>
           </span>
         </div>
 
