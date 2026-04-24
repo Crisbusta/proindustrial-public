@@ -14,6 +14,7 @@ import PanelProfile from './pages/panel/PanelProfile'
 import PanelServices from './pages/panel/PanelServices'
 import PanelChangePassword from './pages/panel/PanelChangePassword'
 import AdminLogin from './pages/admin/AdminLogin'
+import AdminChangePassword from './pages/admin/AdminChangePassword'
 import AdminLayout from './pages/admin/AdminLayout'
 import AdminRegistrationsPage from './pages/admin/AdminRegistrationsPage'
 
@@ -43,6 +44,7 @@ export default function App() {
         </Route>
 
         <Route path="/admin/login" element={<AdminLogin />} />
+        <Route path="/admin/cambiar-contrasena" element={<AdminChangePassword />} />
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<Navigate to="/admin/registros" replace />} />
           <Route path="registros" element={<AdminRegistrationsPage />} />

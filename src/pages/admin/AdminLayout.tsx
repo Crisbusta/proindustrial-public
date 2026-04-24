@@ -53,6 +53,10 @@ export default function AdminLayout() {
             <IconInbox size={17} />
             Registros
           </NavLink>
+          <NavLink to="/admin/cambiar-contrasena" className={({ isActive }) => `panel-nav-item${isActive ? ' active' : ''}`}>
+            <IconShield size={17} />
+            Cambiar contraseña
+          </NavLink>
         </div>
 
         <div className="panel-nav-footer">

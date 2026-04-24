@@ -146,6 +146,9 @@ export const getAdminMe = (): Promise<AdminMeResponse> =>
 export const changePassword = (currentPassword: string, newPassword: string): Promise<{ ok: boolean; token: string }> =>
   authPost('/auth/change-password', { currentPassword, newPassword })
 
+export const adminChangePassword = (currentPassword: string, newPassword: string): Promise<{ ok: boolean; token: string }> =>
+  authPost('/admin/auth/change-password', { currentPassword, newPassword }, 'adminToken')
+
 // ── Panel (JWT protected) ──────────────────────────────────────────────────
 
 export const fetchDashboardStats = (): Promise<DashboardStats> =>
