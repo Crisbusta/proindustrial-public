@@ -278,7 +278,7 @@ export default function PanelInbox() {
                   <div>
                     <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', marginBottom: 4 }}>Correo</p>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-2)' }}>
-                      <IconMail size={14} style={{ color: 'var(--color-cta)', flexShrink: 0 }} />
+                      <span style={{ color: 'var(--color-cta)', flexShrink: 0, display: 'inline-flex' }}><IconMail size={14} /></span>
                       <span style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)', color: 'var(--color-text)' }}>
                         {selected.requesterEmail}
                       </span>
@@ -300,7 +300,7 @@ export default function PanelInbox() {
                     <div>
                       <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', marginBottom: 4 }}>Teléfono</p>
                       <p style={{ fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-medium)', color: 'var(--color-text)', display: 'flex', alignItems: 'center', gap: 4 }}>
-                        <IconPhone size={14} style={{ color: 'var(--color-cta)' }} />
+                        <span style={{ color: 'var(--color-cta)', display: 'inline-flex' }}><IconPhone size={14} /></span>
                         {selected.requesterPhone}
                       </p>
                     </div>
