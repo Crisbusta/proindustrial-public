@@ -1,4 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import ErrorBoundary from './components/ErrorBoundary'
+import { ToastProvider } from './components/Toast'
 import ScrollToTop from './components/ScrollToTop'
 import LandingPage from './pages/LandingPage'
 import CategoryPage from './pages/CategoryPage'
@@ -20,7 +22,9 @@ import AdminRegistrationsPage from './pages/admin/AdminRegistrationsPage'
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <ErrorBoundary>
+      <ToastProvider>
+      <BrowserRouter>
       <ScrollToTop />
       <Routes>
         {/* ── Public site ─────────────────── */}
@@ -52,6 +56,8 @@ export default function App() {
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </BrowserRouter>
+      </BrowserRouter>
+      </ToastProvider>
+    </ErrorBoundary>
   )
 }

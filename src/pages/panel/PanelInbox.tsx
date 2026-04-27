@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { IconInbox, IconMapPin, IconMail, IconPhone, IconMessageCircle, IconCheck, IconCopy } from '../../components/Icons'
 import { fetchPanelQuotes, fetchPanelProfile, updateQuoteStatus, closeQuote } from '../../api/client'
+import { useToast } from '../../components/Toast'
 import type { Company, QuoteRequestResponse } from '../../types'
 
 type Status  = QuoteRequestResponse['status']
@@ -50,6 +51,7 @@ function buildWhatsApp(req: QuoteRequestResponse, companyName: string): string {
 
 
 export default function PanelInbox() {
+  const { addToast } = useToast()
   const [activeTab, setActiveTab]   = useState<typeof TABS[number]['key']>('new')
   const [requests, setRequests]     = useState<QuoteRequestResponse[]>([])
   const [myCompany, setMyCompany]   = useState<Company | null>(null)
@@ -77,8 +79,8 @@ export default function PanelInbox() {
         setRequests(qs)
         setMyCompany(company)
         if (qs.length > 0) setSelectedId(qs[0].id)
-      }).catch(() => {})
-  }, [])
+      }).catch(() => addToast('No se pudo cargar las solicitudes', 'error'))
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const filtered = (() => {
     if (activeTab === 'all')    return requests
@@ -101,7 +103,7 @@ export default function PanelInbox() {
     if (req.status === 'new') {
       updateQuoteStatus(req.id, 'read')
         .then(() => update(req.id, { status: 'read' }))
-        .catch(() => {})
+        .catch(() => addToast('No se pudo actualizar el estado', 'error'))
     }
   }
 
@@ -109,7 +111,7 @@ export default function PanelInbox() {
     if (!selected) return
     updateQuoteStatus(selected.id, 'responded')
       .then(() => update(selected.id, { status: 'responded' }))
-      .catch(() => {})
+      .catch(() => addToast('No se pudo actualizar el estado', 'error'))
   }
 
   const handleClose = async () => {

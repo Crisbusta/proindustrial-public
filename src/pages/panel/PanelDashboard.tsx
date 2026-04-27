@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { IconInbox, IconPackage, IconUser, IconArrowRight, IconShield } from '../../components/Icons'
 import { fetchDashboardStats, fetchPanelQuotes, fetchPanelProfile } from '../../api/client'
+import { useToast } from '../../components/Toast'
 import type { DashboardStats, QuoteRequestResponse, Company } from '../../types'
 
 const STATUS_LABELS: Record<QuoteRequestResponse['status'], string> = {
@@ -22,12 +23,13 @@ export default function PanelDashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [requests, setRequests] = useState<QuoteRequestResponse[]>([])
   const [company, setCompany] = useState<Company | null>(null)
+  const { addToast } = useToast()
 
   useEffect(() => {
-    fetchDashboardStats().then(setStats).catch(() => {})
+    fetchDashboardStats().then(setStats).catch(() => addToast('No se pudo cargar el resumen', 'error'))
     fetchPanelQuotes().then(qs => setRequests(qs.slice(0, 5))).catch(() => {})
     fetchPanelProfile().then(setCompany).catch(() => {})
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const profilePct = company ? computeCompletion(company) : 0
 

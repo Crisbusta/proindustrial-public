@@ -19,6 +19,15 @@ const BASE = '/api'
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE}${path}`, options)
   if (!res.ok) {
+    // Expired or invalid token in authenticated calls → force logout
+    if (res.status === 401 && options?.headers) {
+      const headers = options.headers as Record<string, string>
+      if (headers['Authorization']) {
+        localStorage.removeItem('panelToken')
+        localStorage.removeItem('adminToken')
+        window.location.href = '/panel/login'
+      }
+    }
     const body = await res.json().catch(() => ({}))
     throw new Error(body.error ?? res.statusText)
   }
