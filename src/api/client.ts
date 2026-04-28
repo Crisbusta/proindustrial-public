@@ -13,6 +13,7 @@ import type {
   MeResponse,
   QuoteRequestResponse,
   ProviderRegistrationResponse,
+  AnalyticsResult,
 } from '../types'
 
 const BASE = '/api'
@@ -104,11 +105,12 @@ export const fetchCategoryGroups = (): Promise<CategoryGroup[]> =>
 export const fetchRegions = (): Promise<string[]> =>
   get('/regions')
 
-export const fetchCompanies = (params?: { category?: string; region?: string; featured?: boolean }): Promise<Company[]> => {
+export const fetchCompanies = (params?: { category?: string; region?: string; featured?: boolean; q?: string }): Promise<Company[]> => {
   const qs = new URLSearchParams()
   if (params?.category) qs.set('category', params.category)
   if (params?.region && params.region !== 'Todas las regiones') qs.set('region', params.region)
   if (params?.featured !== undefined) qs.set('featured', String(params.featured))
+  if (params?.q) qs.set('q', params.q)
   const query = qs.toString()
   return get(`/companies${query ? `?${query}` : ''}`)
 }
@@ -300,3 +302,16 @@ export const rejectRegistration = (id: string): Promise<ProviderRegistrationResp
 
 export const deleteApprovedCompany = (id: string): Promise<{ ok: boolean }> =>
   authDelete(`/admin/registrations/${id}/company`, 'adminToken')
+
+// ── Analytics (JWT protected) ──────────────────────────────────────────────
+
+export const fetchAnalytics = (range: '7d' | '30d' | '90d'): Promise<AnalyticsResult> =>
+  authGet(`/panel/analytics?range=${range}`)
+
+// ── Inbox extras ───────────────────────────────────────────────────────────
+
+export const setQuoteTags = (id: string, tags: string[]): Promise<QuoteRequestResponse> =>
+  authPatch(`/panel/quotes/${id}/tags`, { tags })
+
+export const setQuoteFollowUp = (id: string, followUpAt: string | null): Promise<QuoteRequestResponse> =>
+  authPatch(`/panel/quotes/${id}/follow-up`, { followUpAt })

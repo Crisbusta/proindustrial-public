@@ -11,6 +11,7 @@ import {
   fetchCompanyBySlug, fetchCategoryGroups, fetchCompanyServices,
   fetchCompanyCertifications, fetchCompanyProjects,
 } from '../api/client'
+import { track } from '../lib/analytics'
 import type { Company, CategoryGroup, CompanyService, CompanyCertification, CompanyProject } from '../types'
 
 type Tab = 'info' | 'services' | 'projects' | 'certs'
@@ -46,6 +47,7 @@ export default function CompanyProfile() {
       setServices(svcs)
       setCerts(certList)
       setProjects(projList)
+      track(c.id, 'profile_view')
     }).catch(() => setCompany(null)).finally(() => setLoading(false))
   }, [slug])
 
@@ -248,13 +250,13 @@ export default function CompanyProfile() {
                   </h3>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-4)' }}>
                     {company.phone && (
-                      <a href={`tel:${(company.phone ?? '').replace(/\s/g, '')}`} style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-3)', fontSize: 'var(--text-sm)', color: 'var(--color-text)', textDecoration: 'none' }}>
+                      <a href={`tel:${(company.phone ?? '').replace(/\s/g, '')}`} onClick={() => track(company.id, 'contact_click')} style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-3)', fontSize: 'var(--text-sm)', color: 'var(--color-text)', textDecoration: 'none' }}>
                         <span style={{ color: 'var(--color-cta)', flexShrink: 0 }}><IconPhone size={16} /></span>
                         {company.phone}
                       </a>
                     )}
                     {company.email && (
-                      <a href={`mailto:${company.email}`} style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-3)', fontSize: 'var(--text-sm)', color: 'var(--color-text)', textDecoration: 'none', wordBreak: 'break-all' }}>
+                      <a href={`mailto:${company.email}`} onClick={() => track(company.id, 'contact_click')} style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-3)', fontSize: 'var(--text-sm)', color: 'var(--color-text)', textDecoration: 'none', wordBreak: 'break-all' }}>
                         <span style={{ color: 'var(--color-cta)', flexShrink: 0 }}><IconMail size={16} /></span>
                         {company.email}
                       </a>
@@ -273,7 +275,7 @@ export default function CompanyProfile() {
                     )}
                   </div>
                   <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: 'var(--sp-5)', marginTop: 'var(--sp-5)' }}>
-                    <Link to={`/cotizar/${company.slug}`} className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
+                    <Link to={`/cotizar/${company.slug}`} onClick={() => track(company.id, 'quote_form_open')} className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
                       Solicitar cotización
                     </Link>
                   </div>

@@ -135,7 +135,34 @@ export interface QuoteRequestResponse {
   outcome: 'won' | 'negotiating' | 'lost_price' | 'lost_other' | 'no_response' | 'cancelled' | 'no_capacity' | null
   outcomeNote: string | null
   closedAt: string | null
+  firstResponseAt: string | null
+  tags: string[]
+  followUpAt: string | null
+  outcomeAmountClp: number | null
   createdAt: string
+}
+
+export interface AnalyticsTotals {
+  profileViews: number
+  contactClicks: number
+  quoteFormOpens: number
+  quoteFormSubmits: number
+  rfqsReceived: number
+  contactRate: number
+}
+
+export interface DailyMetric {
+  date: string
+  profileViews: number
+  contactClicks: number
+  rfqs: number
+}
+
+export interface AnalyticsResult {
+  range: string
+  days: number
+  totals: AnalyticsTotals
+  trend: DailyMetric[]
 }
 
 export interface ProviderRegistrationResponse {

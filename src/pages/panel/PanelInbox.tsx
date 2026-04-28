@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
-import { IconInbox, IconMapPin, IconMail, IconPhone, IconMessageCircle, IconCheck, IconCopy } from '../../components/Icons'
-import { fetchPanelQuotes, fetchPanelProfile, updateQuoteStatus, closeQuote } from '../../api/client'
+import { useState, useEffect, useRef } from 'react'
+import { IconInbox, IconMapPin, IconMail, IconPhone, IconMessageCircle, IconCheck, IconCopy, IconSearch, IconX } from '../../components/Icons'
+import { fetchPanelQuotes, fetchPanelProfile, updateQuoteStatus, closeQuote, setQuoteTags, setQuoteFollowUp } from '../../api/client'
 import { useToast } from '../../components/Toast'
 import type { Company, QuoteRequestResponse } from '../../types'
 
@@ -50,14 +50,26 @@ function buildWhatsApp(req: QuoteRequestResponse, companyName: string): string {
 }
 
 
+const fmtDateInput = (iso: string | null) => {
+  if (!iso) return ''
+  return iso.slice(0, 10)
+}
+
+const PRESET_TAGS = ['Urgente', 'Seguimiento', 'Gran proyecto', 'Cliente recurrente', 'Sin presupuesto']
+
 export default function PanelInbox() {
   const { addToast } = useToast()
   const [activeTab, setActiveTab]   = useState<typeof TABS[number]['key']>('new')
   const [requests, setRequests]     = useState<QuoteRequestResponse[]>([])
   const [myCompany, setMyCompany]   = useState<Company | null>(null)
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [search, setSearch]         = useState('')
 
   const [emailCopied, setEmailCopied] = useState(false)
+  const tagInputRef = useRef<HTMLInputElement>(null)
+  const [tagInput, setTagInput] = useState('')
+  const [savingTag, setSavingTag] = useState(false)
+  const [savingFollowUp, setSavingFollowUp] = useState(false)
 
   const copyEmail = (email: string) => {
     navigator.clipboard.writeText(email).then(() => {
@@ -83,9 +95,19 @@ export default function PanelInbox() {
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const filtered = (() => {
-    if (activeTab === 'all')    return requests
-    if (activeTab === 'closed') return requests.filter(r => r.outcome !== null)
-    return requests.filter(r => r.status === activeTab && r.outcome === null)
+    const base = (() => {
+      if (activeTab === 'all')    return requests
+      if (activeTab === 'closed') return requests.filter(r => r.outcome !== null)
+      return requests.filter(r => r.status === activeTab && r.outcome === null)
+    })()
+    if (!search.trim()) return base
+    const q = search.toLowerCase()
+    return base.filter(r =>
+      r.requesterName.toLowerCase().includes(q) ||
+      (r.requesterCompany ?? '').toLowerCase().includes(q) ||
+      r.service.toLowerCase().includes(q) ||
+      (r.description ?? '').toLowerCase().includes(q)
+    )
   })()
 
   const selected = filtered.find(r => r.id === selectedId) ?? null
@@ -128,6 +150,50 @@ export default function PanelInbox() {
     }
   }
 
+  const handleAddTag = async (tag: string) => {
+    if (!selected) return
+    const trimmed = tag.trim()
+    if (!trimmed || selected.tags.includes(trimmed)) return
+    const newTags = [...selected.tags, trimmed]
+    setSavingTag(true)
+    try {
+      const updated = await setQuoteTags(selected.id, newTags)
+      update(updated.id, { tags: updated.tags })
+      setTagInput('')
+    } catch {
+      addToast('No se pudo guardar la etiqueta', 'error')
+    } finally {
+      setSavingTag(false)
+    }
+  }
+
+  const handleRemoveTag = async (tag: string) => {
+    if (!selected) return
+    const newTags = selected.tags.filter(t => t !== tag)
+    setSavingTag(true)
+    try {
+      const updated = await setQuoteTags(selected.id, newTags)
+      update(updated.id, { tags: updated.tags })
+    } catch {
+      addToast('No se pudo eliminar la etiqueta', 'error')
+    } finally {
+      setSavingTag(false)
+    }
+  }
+
+  const handleFollowUp = async (dateStr: string) => {
+    if (!selected) return
+    setSavingFollowUp(true)
+    try {
+      const updated = await setQuoteFollowUp(selected.id, dateStr || null)
+      update(updated.id, { followUpAt: updated.followUpAt })
+    } catch {
+      addToast('No se pudo guardar el seguimiento', 'error')
+    } finally {
+      setSavingFollowUp(false)
+    }
+  }
+
   const newCount    = requests.filter(r => r.status === 'new').length
   const closedCount = requests.filter(r => r.outcome !== null).length
   const companyName = myCompany?.name ?? 'nuestra empresa'
@@ -147,8 +213,25 @@ export default function PanelInbox() {
 
       <div className="panel-content" style={{ padding: 0, display: 'flex', flexDirection: 'column', flex: 1 }}>
 
-        {/* Tabs */}
-        <div style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-surface)', display: 'flex', padding: '0 var(--sp-8)' }}>
+        {/* Search + Tabs */}
+        <div style={{ borderBottom: '1px solid var(--color-border)', background: 'var(--color-surface)' }}>
+          <div style={{ padding: 'var(--sp-3) var(--sp-5)', borderBottom: '1px solid var(--color-border)' }}>
+            <div style={{ position: 'relative', maxWidth: 400 }}>
+              <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--color-text-muted)', pointerEvents: 'none', display: 'flex' }}>
+                <IconSearch size={14} />
+              </span>
+              <input
+                type="search"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Buscar en solicitudes..."
+                className="form-input"
+                style={{ paddingLeft: 32, paddingTop: '6px', paddingBottom: '6px', fontSize: 'var(--text-sm)' }}
+                aria-label="Buscar solicitudes"
+              />
+            </div>
+          </div>
+        <div style={{ display: 'flex', padding: '0 var(--sp-8)' }}>
           {TABS.map(tab => {
             const count = tab.key === 'all' ? requests.length
               : tab.key === 'closed' ? closedCount
@@ -169,6 +252,7 @@ export default function PanelInbox() {
               </button>
             )
           })}
+        </div>
         </div>
 
         <div className={`inbox-panels${selectedId ? ' detail-open' : ''}`} style={{ display: 'grid', gridTemplateColumns: '300px 1fr', flex: 1, overflow: 'hidden' }}>
@@ -268,6 +352,72 @@ export default function PanelInbox() {
                   </p>
                 </div>
               )}
+
+              {/* ── Tags ── */}
+              <div style={{ padding: 'var(--sp-6) var(--sp-8)', borderBottom: '1px solid var(--color-border)' }}>
+                <p style={{ fontSize: 'var(--text-xs)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-text-muted)', marginBottom: 'var(--sp-3)' }}>
+                  Etiquetas
+                </p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--sp-2)', marginBottom: 'var(--sp-3)' }}>
+                  {selected.tags.map(tag => (
+                    <span key={tag} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 'var(--text-xs)', padding: '3px 8px', borderRadius: 20, background: 'var(--color-primary)', color: '#fff', fontWeight: 'var(--weight-medium)' }}>
+                      {tag}
+                      <button onClick={() => handleRemoveTag(tag)} disabled={savingTag} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.7)', padding: 0, lineHeight: 1, display: 'flex' }}>
+                        <IconX size={11} />
+                      </button>
+                    </span>
+                  ))}
+                  {selected.tags.length === 0 && (
+                    <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>Sin etiquetas</span>
+                  )}
+                </div>
+                <div style={{ display: 'flex', gap: 'var(--sp-2)', flexWrap: 'wrap', marginBottom: 'var(--sp-2)' }}>
+                  {PRESET_TAGS.filter(t => !selected.tags.includes(t)).map(t => (
+                    <button key={t} onClick={() => handleAddTag(t)} disabled={savingTag}
+                      style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: 20, border: '1px dashed var(--color-border)', background: 'none', color: 'var(--color-text-secondary)', cursor: 'pointer' }}>
+                      + {t}
+                    </button>
+                  ))}
+                </div>
+                <form onSubmit={e => { e.preventDefault(); handleAddTag(tagInput) }} style={{ display: 'flex', gap: 'var(--sp-2)' }}>
+                  <input
+                    ref={tagInputRef}
+                    value={tagInput}
+                    onChange={e => setTagInput(e.target.value)}
+                    placeholder="Nueva etiqueta..."
+                    className="form-input"
+                    style={{ fontSize: 'var(--text-xs)', padding: '4px 10px', flex: 1 }}
+                  />
+                  <button type="submit" className="btn btn-outline" disabled={savingTag || !tagInput.trim()} style={{ fontSize: 'var(--text-xs)', padding: '4px 12px' }}>
+                    Agregar
+                  </button>
+                </form>
+              </div>
+
+              {/* ── Follow-up ── */}
+              <div style={{ padding: 'var(--sp-5) var(--sp-8)', borderBottom: '1px solid var(--color-border)' }}>
+                <p style={{ fontSize: 'var(--text-xs)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.07em', color: 'var(--color-text-muted)', marginBottom: 'var(--sp-3)' }}>
+                  Recordatorio de seguimiento
+                </p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-3)' }}>
+                  <input
+                    type="date"
+                    className="form-input"
+                    style={{ fontSize: 'var(--text-sm)', padding: '6px 10px', maxWidth: 180 }}
+                    value={fmtDateInput(selected.followUpAt)}
+                    onChange={e => handleFollowUp(e.target.value)}
+                    disabled={savingFollowUp}
+                    aria-label="Fecha de seguimiento"
+                  />
+                  {selected.followUpAt && (
+                    <button onClick={() => handleFollowUp('')} disabled={savingFollowUp}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-muted)', display: 'flex', padding: 4 }}>
+                      <IconX size={14} />
+                    </button>
+                  )}
+                  {savingFollowUp && <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>Guardando...</span>}
+                </div>
+              </div>
 
               {/* ── Contact actions ── */}
               <div style={{ padding: 'var(--sp-8)', paddingBottom: 'var(--sp-6)', borderBottom: '1px solid var(--color-border)' }}>

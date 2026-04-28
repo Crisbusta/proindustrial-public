@@ -17,6 +17,8 @@ import PanelServices from './pages/panel/PanelServices'
 import PanelChangePassword from './pages/panel/PanelChangePassword'
 import PanelCertifications from './pages/panel/PanelCertifications'
 import PanelProjects from './pages/panel/PanelProjects'
+import PanelAnalytics from './pages/panel/PanelAnalytics'
+import SearchPage from './pages/SearchPage'
 import AdminLogin from './pages/admin/AdminLogin'
 import AdminChangePassword from './pages/admin/AdminChangePassword'
 import AdminLayout from './pages/admin/AdminLayout'
@@ -37,6 +39,7 @@ export default function App() {
         <Route path="/cotizar" element={<QuoteFormPage />} />
         <Route path="/cotizar/:companySlug" element={<QuoteFormPage />} />
         <Route path="/registrar" element={<RegisterProviderPage />} />
+        <Route path="/buscar" element={<SearchPage />} />
 
         {/* ── Company panel ───────────────── */}
         <Route path="/panel/login" element={<PanelLogin />} />
@@ -48,6 +51,7 @@ export default function App() {
           <Route path="servicios" element={<PanelServices />} />
           <Route path="certificaciones" element={<PanelCertifications />} />
           <Route path="casos" element={<PanelProjects />} />
+          <Route path="analiticas" element={<PanelAnalytics />} />
           <Route path="perfil" element={<PanelProfile />} />
         </Route>
 

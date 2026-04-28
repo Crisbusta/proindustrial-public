@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import CategoryAccordion from '../components/CategoryAccordion'
@@ -33,13 +33,21 @@ const STATS = [
 ]
 
 export default function LandingPage() {
+  const navigate = useNavigate()
   const [categoryGroups, setCategoryGroups] = useState<CategoryGroup[]>([])
   const [featuredCompanies, setFeaturedCompanies] = useState<Company[]>([])
+  const [searchVal, setSearchVal] = useState('')
 
   useEffect(() => {
     fetchCategoryGroups().then(setCategoryGroups).catch(() => {})
     fetchCompanies({ featured: true }).then(setFeaturedCompanies).catch(() => {})
   }, [])
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    const q = searchVal.trim()
+    if (q) navigate(`/buscar?q=${encodeURIComponent(q)}`)
+  }
 
   return (
     <>
@@ -65,6 +73,28 @@ export default function LandingPage() {
                 Encuentra empresas de termofusión, geomembranas y servicios técnicos
                 para tu proyecto de construcción, minería o infraestructura.
               </p>
+
+              <form onSubmit={handleSearch} role="search" aria-label="Buscar empresas y servicios" style={{ marginBottom: 'var(--sp-6)' }}>
+                <div style={{ display: 'flex', maxWidth: 520, background: '#fff', borderRadius: 'var(--radius-md)', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.18)' }}>
+                  <span style={{ display: 'flex', alignItems: 'center', paddingLeft: 16, color: 'var(--color-text-muted)', flexShrink: 0 }}>
+                    <IconSearch size={18} />
+                  </span>
+                  <input
+                    type="search"
+                    value={searchVal}
+                    onChange={e => setSearchVal(e.target.value)}
+                    placeholder="Busca por servicio, empresa o categoría..."
+                    style={{ flex: 1, border: 'none', outline: 'none', padding: '14px 12px', fontSize: 'var(--text-base)', color: 'var(--color-text)', background: 'transparent' }}
+                    aria-label="Buscar"
+                  />
+                  <button
+                    type="submit"
+                    style={{ background: 'var(--color-cta)', color: '#fff', border: 'none', padding: '0 20px', fontSize: 'var(--text-sm)', fontWeight: 'var(--weight-semibold)', cursor: 'pointer', flexShrink: 0 }}
+                  >
+                    Buscar
+                  </button>
+                </div>
+              </form>
 
               <div className="hero-actions">
                 <Link to="/#categorias" className="btn btn-primary btn-lg" onClick={e => {
