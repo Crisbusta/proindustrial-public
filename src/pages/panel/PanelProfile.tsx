@@ -1,7 +1,11 @@
-import { useState, useEffect, useCallback } from 'react'
-import { IconCheck, IconUser } from '../../components/Icons'
-import { fetchPanelProfile, updatePanelProfile, fetchRegions, fetchCategoryGroups } from '../../api/client'
-import type { CategoryGroup } from '../../types'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { IconCheck, IconUser, IconCamera, IconUpload } from '../../components/Icons'
+import {
+  fetchPanelProfile, updatePanelProfile, fetchRegions,
+  uploadCompanyLogo, uploadCompanyCover,
+  fetchServiceRegions, updateServiceRegions,
+} from '../../api/client'
+import type { Company } from '../../types'
 
 interface ProfileForm {
   name: string
@@ -15,10 +19,12 @@ interface ProfileForm {
   yearsActive: string
 }
 
-function computeCompletion(form: ProfileForm): number {
-  const fields: (keyof ProfileForm)[] = ['name', 'tagline', 'description', 'location', 'region', 'phone', 'email']
-  const filled = fields.filter(f => Boolean(form[f]))
-  return Math.round((filled.length / fields.length) * 100)
+function computeCompletion(form: ProfileForm, hasLogo: boolean, hasCover: boolean, regionCount: number): number {
+  const textFields: (keyof ProfileForm)[] = ['name', 'tagline', 'description', 'location', 'region', 'phone', 'email']
+  const filled = textFields.filter(f => Boolean(form[f])).length
+  const total = textFields.length + 3 // +logo, +cover, +regions
+  const extras = (hasLogo ? 1 : 0) + (hasCover ? 1 : 0) + (regionCount > 0 ? 1 : 0)
+  return Math.round(((filled + extras) / total) * 100)
 }
 
 export default function PanelProfile() {
@@ -26,28 +32,36 @@ export default function PanelProfile() {
     name: '', tagline: '', description: '', location: '',
     region: '', phone: '', email: '', website: '', yearsActive: '',
   })
+  const [company, setCompany] = useState<Company | null>(null)
   const [regions, setRegions] = useState<string[]>([])
-  const [groups, setGroups] = useState<CategoryGroup[]>([])
+  const [serviceRegions, setServiceRegions] = useState<string[]>([])
   const [saved, setSaved] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [uploadingLogo, setUploadingLogo] = useState(false)
+  const [uploadingCover, setUploadingCover] = useState(false)
+  const [savingRegions, setSavingRegions] = useState(false)
+
+  const logoInputRef = useRef<HTMLInputElement>(null)
+  const coverInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     fetchPanelProfile().then(c => {
+      setCompany(c)
       setForm({
         name: c.name,
-        tagline: c.tagline,
-        description: c.description,
-        location: c.location,
-        region: c.region,
-        phone: c.phone,
-        email: c.email,
+        tagline: c.tagline ?? '',
+        description: c.description ?? '',
+        location: c.location ?? '',
+        region: c.region ?? '',
+        phone: c.phone ?? '',
+        email: c.email ?? '',
         website: c.website ?? '',
         yearsActive: c.yearsActive != null ? String(c.yearsActive) : '',
       })
     }).catch(() => {})
     fetchRegions().then(rs => setRegions(rs.filter(r => r !== 'Todas las regiones'))).catch(() => {})
-    fetchCategoryGroups().then(setGroups).catch(() => {})
+    fetchServiceRegions().then(r => setServiceRegions(r.regions)).catch(() => {})
   }, [])
 
   const set = (field: keyof ProfileForm) => (
@@ -78,13 +92,46 @@ export default function PanelProfile() {
     }
   }, [form])
 
-  const completion = computeCompletion(form)
-  const completionColor = completion < 50 ? '#DC2626' : completion < 80 ? '#D97706' : 'var(--color-success)'
+  const handleLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploadingLogo(true)
+    try {
+      const { url } = await uploadCompanyLogo(file)
+      setCompany(prev => prev ? { ...prev, logoUrl: url } : prev)
+    } catch {}
+    setUploadingLogo(false)
+    e.target.value = ''
+  }
 
-  const allCats = groups.flatMap(g => [
-    { slug: g.slug, name: g.name },
-    ...g.subcategories.map(s => ({ slug: s.slug, name: s.name })),
-  ])
+  const handleCoverChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploadingCover(true)
+    try {
+      const { url } = await uploadCompanyCover(file)
+      setCompany(prev => prev ? { ...prev, coverUrl: url } : prev)
+    } catch {}
+    setUploadingCover(false)
+    e.target.value = ''
+  }
+
+  const toggleRegion = async (region: string) => {
+    const next = serviceRegions.includes(region)
+      ? serviceRegions.filter(r => r !== region)
+      : [...serviceRegions, region]
+    setServiceRegions(next)
+    setSavingRegions(true)
+    try {
+      await updateServiceRegions(next)
+    } catch {}
+    setSavingRegions(false)
+  }
+
+  const hasLogo = Boolean(company?.logoUrl)
+  const hasCover = Boolean(company?.coverUrl)
+  const completion = computeCompletion(form, hasLogo, hasCover, serviceRegions.length)
+  const completionColor = completion < 50 ? '#DC2626' : completion < 80 ? '#D97706' : 'var(--color-success)'
 
   return (
     <>
@@ -128,7 +175,80 @@ export default function PanelProfile() {
           )}
         </div>
 
-        {/* Section 1 — Información general */}
+        {/* Section — Imagen corporativa */}
+        <div className="panel-section">
+          <div className="panel-section-header">
+            <h2 className="panel-section-title">Imagen corporativa</h2>
+          </div>
+          <div className="panel-section-body" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-5)' }}>
+
+            {/* Cover */}
+            <div className="form-group">
+              <label className="form-label">Imagen de portada</label>
+              <input
+                ref={coverInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                style={{ display: 'none' }}
+                onChange={handleCoverChange}
+              />
+              <div className="cover-preview-wrap" onClick={() => coverInputRef.current?.click()}>
+                {company?.coverUrl
+                  ? <img src={company.coverUrl} alt="Portada" />
+                  : (
+                    <div className="cover-preview-empty">
+                      <IconCamera size={28} />
+                      <span>Clic para subir imagen de portada</span>
+                    </div>
+                  )
+                }
+                <div className="cover-preview-overlay">
+                  {uploadingCover
+                    ? <div className="upload-spinner" />
+                    : <><IconUpload size={16} />{company?.coverUrl ? 'Cambiar portada' : 'Subir portada'}</>
+                  }
+                </div>
+              </div>
+              <p className="form-hint">JPG, PNG o WebP · máx. 5 MB · recomendado 1200×400 px.</p>
+            </div>
+
+            {/* Logo */}
+            <div className="form-group">
+              <label className="form-label">Logo de la empresa</label>
+              <input
+                ref={logoInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                style={{ display: 'none' }}
+                onChange={handleLogoChange}
+              />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-4)' }}>
+                <div className="logo-preview-wrap" onClick={() => logoInputRef.current?.click()}>
+                  {company?.logoUrl
+                    ? <img src={company.logoUrl} alt="Logo" />
+                    : <div className="logo-preview-empty"><IconCamera size={20} /></div>
+                  }
+                  <div className="logo-preview-overlay">
+                    {uploadingLogo ? <div className="upload-spinner" /> : <IconUpload size={14} />}
+                  </div>
+                </div>
+                <div>
+                  <button
+                    className="btn btn-outline btn-sm"
+                    onClick={() => logoInputRef.current?.click()}
+                    disabled={uploadingLogo}
+                    aria-busy={uploadingLogo}
+                  >
+                    {uploadingLogo ? 'Subiendo...' : company?.logoUrl ? 'Cambiar logo' : 'Subir logo'}
+                  </button>
+                  <p className="form-hint" style={{ marginTop: 'var(--sp-2)' }}>JPG, PNG o WebP · máx. 5 MB · cuadrado recomendado.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Section — Información general */}
         <div className="panel-section">
           <div className="panel-section-header">
             <h2 className="panel-section-title">Información general</h2>
@@ -170,7 +290,7 @@ export default function PanelProfile() {
           </div>
         </div>
 
-        {/* Section 2 — Ubicación */}
+        {/* Section — Ubicación */}
         <div className="panel-section">
           <div className="panel-section-header">
             <h2 className="panel-section-title">Ubicación</h2>
@@ -185,7 +305,7 @@ export default function PanelProfile() {
               </div>
               <div className="form-group">
                 <label htmlFor="prof-region" className="form-label">
-                  Región <span className="required" aria-hidden="true">*</span>
+                  Región principal <span className="required" aria-hidden="true">*</span>
                 </label>
                 <select id="prof-region" className="form-select" value={form.region} onChange={set('region')}>
                   <option value="">Seleccionar región...</option>
@@ -196,7 +316,7 @@ export default function PanelProfile() {
           </div>
         </div>
 
-        {/* Section 3 — Contacto */}
+        {/* Section — Contacto */}
         <div className="panel-section">
           <div className="panel-section-header">
             <h2 className="panel-section-title">Datos de contacto</h2>
@@ -220,16 +340,36 @@ export default function PanelProfile() {
           </div>
         </div>
 
-        {/* Section 4 — Especialidades (display only, read from API) */}
-        {allCats.length > 0 && (
+        {/* Section — Zonas de cobertura */}
+        {regions.length > 0 && (
           <div className="panel-section">
             <div className="panel-section-header">
-              <h2 className="panel-section-title">Categorías disponibles</h2>
+              <h2 className="panel-section-title">
+                Zonas de cobertura
+                {savingRegions && <span style={{ fontSize: 'var(--text-xs)', fontWeight: 'var(--weight-normal)', color: 'var(--color-text-muted)', marginLeft: 'var(--sp-3)' }}>Guardando…</span>}
+              </h2>
             </div>
             <div className="panel-section-body">
-              <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', lineHeight: 1.6 }}>
-                Las categorías en las que aparece tu empresa se gestionan a través de tus servicios publicados.
+              <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-secondary)', lineHeight: 1.6, marginBottom: 'var(--sp-4)' }}>
+                Selecciona las regiones donde tu empresa ofrece servicios. Los compradores pueden filtrar por zona.
               </p>
+              <div className="region-chips">
+                {regions.map(r => (
+                  <button
+                    key={r}
+                    className={`region-chip${serviceRegions.includes(r) ? ' active' : ''}`}
+                    onClick={() => toggleRegion(r)}
+                    aria-pressed={serviceRegions.includes(r)}
+                  >
+                    {r}
+                  </button>
+                ))}
+              </div>
+              {serviceRegions.length > 0 && (
+                <p style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', marginTop: 'var(--sp-3)' }}>
+                  {serviceRegions.length} {serviceRegions.length === 1 ? 'región seleccionada' : 'regiones seleccionadas'}
+                </p>
+              )}
             </div>
           </div>
         )}

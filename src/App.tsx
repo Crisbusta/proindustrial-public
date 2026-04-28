@@ -15,6 +15,8 @@ import PanelInbox from './pages/panel/PanelInbox'
 import PanelProfile from './pages/panel/PanelProfile'
 import PanelServices from './pages/panel/PanelServices'
 import PanelChangePassword from './pages/panel/PanelChangePassword'
+import PanelCertifications from './pages/panel/PanelCertifications'
+import PanelProjects from './pages/panel/PanelProjects'
 import AdminLogin from './pages/admin/AdminLogin'
 import AdminChangePassword from './pages/admin/AdminChangePassword'
 import AdminLayout from './pages/admin/AdminLayout'
@@ -44,6 +46,8 @@ export default function App() {
           <Route path="dashboard" element={<PanelDashboard />} />
           <Route path="solicitudes" element={<PanelInbox />} />
           <Route path="servicios" element={<PanelServices />} />
+          <Route path="certificaciones" element={<PanelCertifications />} />
+          <Route path="casos" element={<PanelProjects />} />
           <Route path="perfil" element={<PanelProfile />} />
         </Route>
 

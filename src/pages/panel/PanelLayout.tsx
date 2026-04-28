@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Outlet, NavLink, useNavigate, Navigate, useLocation } from 'react-router-dom'
 import {
   IconLayoutDashboard, IconUser,
-  IconPackage, IconLogOut, IconInbox
+  IconPackage, IconLogOut, IconInbox, IconAward, IconFolderOpen
 } from '../../components/Icons'
 import { getMe } from '../../api/client'
 import type { Company } from '../../types'
@@ -46,6 +46,8 @@ export default function PanelLayout() {
     { to: '/panel/dashboard', label: 'Resumen', Icon: IconLayoutDashboard },
     { to: '/panel/solicitudes', label: 'Solicitudes', Icon: IconInbox },
     { to: '/panel/servicios', label: 'Mis servicios', Icon: IconPackage },
+    { to: '/panel/certificaciones', label: 'Certificaciones', Icon: IconAward },
+    { to: '/panel/casos', label: 'Casos destacados', Icon: IconFolderOpen },
     { to: '/panel/perfil', label: 'Perfil de empresa', Icon: IconUser },
   ]
 

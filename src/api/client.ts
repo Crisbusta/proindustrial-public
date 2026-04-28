@@ -2,6 +2,9 @@ import type {
   CategoryGroup,
   Company,
   CompanyService,
+  CompanyCertification,
+  CompanyProject,
+  ServiceImage,
   DashboardStats,
   AdminApprovalResponse,
   AdminMeResponse,
@@ -204,6 +207,83 @@ export const updatePanelProfile = (body: {
   yearsActive?: number
 }): Promise<Company> =>
   authPut('/panel/profile', body)
+
+// ── Panel: media (JWT protected) ──────────────────────────────────────────────
+
+function authUpload<T>(path: string, file: File, storageKey: 'panelToken' | 'adminToken' = 'panelToken'): Promise<T> {
+  const form = new FormData()
+  form.append('file', file)
+  return request<T>(path, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${getToken(storageKey)}` },
+    body: form,
+  })
+}
+
+export const uploadCompanyLogo = (file: File): Promise<{ url: string }> =>
+  authUpload('/panel/profile/logo', file)
+
+export const uploadCompanyCover = (file: File): Promise<{ url: string }> =>
+  authUpload('/panel/profile/cover', file)
+
+export const fetchServiceRegions = (): Promise<{ regions: string[] }> =>
+  authGet('/panel/profile/regions')
+
+export const updateServiceRegions = (regions: string[]): Promise<{ regions: string[] }> =>
+  authPut('/panel/profile/regions', { regions })
+
+export const fetchServiceImages = (serviceId: string): Promise<ServiceImage[]> =>
+  authGet(`/panel/services/${serviceId}/images`)
+
+export const uploadServiceImage = (serviceId: string, file: File): Promise<ServiceImage> =>
+  authUpload(`/panel/services/${serviceId}/images`, file)
+
+export const deleteServiceImage = (serviceId: string, imgId: string): Promise<{ ok: boolean }> =>
+  authDelete(`/panel/services/${serviceId}/images/${imgId}`)
+
+export const reorderServiceImages = (serviceId: string, orders: { id: string; sortOrder: number }[]): Promise<{ ok: boolean }> =>
+  authPatch(`/panel/services/${serviceId}/images/reorder`, { orders })
+
+export const fetchCertifications = (): Promise<CompanyCertification[]> =>
+  authGet('/panel/certifications')
+
+export const createCertification = (body: { name: string; issuer?: string; issuedAt?: string; expiresAt?: string }): Promise<CompanyCertification> =>
+  authPost('/panel/certifications', body)
+
+export const updateCertification = (id: string, body: { name: string; issuer?: string; issuedAt?: string; expiresAt?: string }): Promise<CompanyCertification> =>
+  authPatch(`/panel/certifications/${id}`, body)
+
+export const deleteCertification = (id: string): Promise<{ ok: boolean }> =>
+  authDelete(`/panel/certifications/${id}`)
+
+export const uploadCertificationDoc = (certId: string, file: File): Promise<CompanyCertification> =>
+  authUpload(`/panel/certifications/${certId}/document`, file)
+
+export const fetchProjects = (): Promise<CompanyProject[]> =>
+  authGet('/panel/projects')
+
+export const createProject = (body: { title: string; description?: string; clientName?: string; year?: number }): Promise<CompanyProject> =>
+  authPost('/panel/projects', body)
+
+export const updateProject = (id: string, body: { title: string; description?: string; clientName?: string; year?: number }): Promise<CompanyProject> =>
+  authPatch(`/panel/projects/${id}`, body)
+
+export const deleteProject = (id: string): Promise<{ ok: boolean }> =>
+  authDelete(`/panel/projects/${id}`)
+
+export const uploadProjectImage = (projectId: string, file: File): Promise<{ id: string; url: string }> =>
+  authUpload(`/panel/projects/${projectId}/images`, file)
+
+export const deleteProjectImage = (projectId: string, imgId: string): Promise<{ ok: boolean }> =>
+  authDelete(`/panel/projects/${projectId}/images/${imgId}`)
+
+// ── Public media ──────────────────────────────────────────────────────────────
+
+export const fetchCompanyCertifications = (slug: string): Promise<CompanyCertification[]> =>
+  get(`/companies/${slug}/certifications`)
+
+export const fetchCompanyProjects = (slug: string): Promise<CompanyProject[]> =>
+  get(`/companies/${slug}/projects`)
 
 // ── Admin (JWT protected) ──────────────────────────────────────────────────
 

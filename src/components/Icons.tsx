@@ -98,6 +98,14 @@ export const IconLogoPipe = ({ size = 20, className }: IconProps) => (
   </svg>
 )
 
+// Media / Upload
+export const IconCamera = icon('M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2zM12 17a4 4 0 100-8 4 4 0 000 8z')
+export const IconUpload = icon('M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12')
+export const IconImage = icon('M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M4 4h16a2 2 0 012 2v12a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2z')
+export const IconAward = icon('M12 15l-4.243 4.243 1.414 1.414L12 18.828l2.829 2.829 1.414-1.414L12 15zM12 1a7 7 0 110 14A7 7 0 0112 1z')
+export const IconFolderOpen = icon('M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2zM2 10h20')
+export const IconGripVertical = icon('M9 3h2v2H9zM9 11h2v2H9zM9 19h2v2H9zM13 3h2v2h-2zM13 11h2v2h-2zM13 19h2v2h-2z')
+
 // Panel icons
 export const IconLayoutDashboard = icon('M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z')
 export const IconUser = icon('M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2M12 11a4 4 0 100-8 4 4 0 000 8z')

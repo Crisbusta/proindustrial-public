@@ -31,17 +31,71 @@ export interface Company {
   id: string
   slug: string
   name: string
-  tagline: string
-  description: string
-  location: string
-  region: string
-  categories: string[]   // category slugs
-  services: string[]     // free-text service names
-  phone: string
-  email: string
-  website?: string
-  yearsActive?: number
+  tagline: string | null
+  description: string | null
+  location: string | null
+  region: string | null
+  categories: string[]
+  services: string[]
+  phone: string | null
+  email: string | null
+  website?: string | null
+  yearsActive?: number | null
   featured: boolean
+  logoUrl?: string | null
+  coverUrl?: string | null
+}
+
+export interface ServiceImage {
+  id: string
+  serviceId: string
+  url: string
+  altText: string | null
+  sortOrder: number
+  createdAt: string
+}
+
+export interface CompanyService {
+  id: string
+  companyId: string
+  name: string
+  category: string | null
+  description: string | null
+  status: 'active' | 'draft'
+  createdAt: string
+  images?: ServiceImage[]
+}
+
+export interface CompanyCertification {
+  id: string
+  companyId: string
+  name: string
+  issuer: string | null
+  documentUrl: string | null
+  issuedAt: string | null
+  expiresAt: string | null
+  createdAt: string
+}
+
+export interface ProjectImage {
+  id: string
+  projectId: string
+  url: string
+  altText: string | null
+  sortOrder: number
+}
+
+export interface CompanyProject {
+  id: string
+  companyId: string
+  title: string
+  description: string | null
+  clientName: string | null
+  year: number | null
+  coverUrl: string | null
+  sortOrder: number
+  createdAt: string
+  images: ProjectImage[]
 }
 
 // Form input types (used by form state)
@@ -96,15 +150,7 @@ export interface ProviderRegistrationResponse {
   createdAt: string
 }
 
-export interface CompanyService {
-  id: string
-  companyId: string
-  name: string
-  category: string | null
-  description: string | null
-  status: 'active' | 'draft'
-  createdAt: string
-}
+// (CompanyService is now defined above with images field)
 
 export interface DashboardStats {
   totalQuotes: number
