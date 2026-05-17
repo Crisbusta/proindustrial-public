@@ -13,7 +13,7 @@ const KPI: { key: keyof AnalyticsResult['totals']; label: string; icon: typeof I
   { key: 'contactClicks',     label: 'Clics en contacto',  icon: IconPhone,    color: '#7C3AED' },
   { key: 'quoteFormOpens',    label: 'Formulario abierto', icon: IconMail,     color: '#0891B2' },
   { key: 'quoteFormSubmits',  label: 'Cotizaciones env.',  icon: IconMail,     color: '#059669' },
-  { key: 'rfqsReceived',      label: 'RFQs recibidas',     icon: IconBarChart, color: '#D97706' },
+  { key: 'rfqsReceived',      label: 'Cotizaciones recibidas',     icon: IconBarChart, color: '#D97706' },
   { key: 'contactRate',       label: 'Tasa de contacto',   icon: IconBarChart, color: '#DC2626', fmt: (n) => `${n.toFixed(1)}%` },
 ]
 
@@ -42,7 +42,7 @@ function TrendChart({ data }: { data: DailyMetric[] }) {
 
   return (
     <div style={{ overflowX: 'auto' }}>
-      <svg viewBox={`0 0 ${W} ${H + 24}`} style={{ width: '100%', minWidth: 320, maxWidth: 700 }} aria-label="Tendencia de visitas y RFQs">
+      <svg viewBox={`0 0 ${W} ${H + 24}`} style={{ width: '100%', minWidth: 320, maxWidth: 700 }} aria-label="Tendencia de visitas y cotizaciones">
         {/* Grid lines */}
         {[0, 0.25, 0.5, 0.75, 1].map(t => (
           <line key={t} x1={0} y1={H * (1 - t)} x2={W} y2={H * (1 - t)} stroke="var(--color-border)" strokeWidth={1} />
@@ -69,7 +69,7 @@ function TrendChart({ data }: { data: DailyMetric[] }) {
         </span>
         <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 'var(--text-xs)', color: 'var(--color-text-secondary)' }}>
           <span style={{ width: 24, height: 2, background: '#D97706', display: 'inline-block', borderRadius: 2, opacity: 0.7 }} />
-          RFQs recibidas
+          Cotizaciones recibidas
         </span>
       </div>
     </div>
@@ -155,7 +155,7 @@ export default function PanelAnalytics() {
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 'var(--text-sm)' }}>
                   <thead>
                     <tr style={{ background: 'var(--color-surface-2)' }}>
-                      {['Fecha', 'Vistas', 'Clics contacto', 'RFQs'].map(h => (
+                      {['Fecha', 'Vistas', 'Clics contacto', 'Cotiz.'].map(h => (
                         <th key={h} style={{ padding: '10px 16px', textAlign: 'left', fontWeight: 'var(--weight-semibold)', color: 'var(--color-text-secondary)', fontSize: 'var(--text-xs)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{h}</th>
                       ))}
                     </tr>

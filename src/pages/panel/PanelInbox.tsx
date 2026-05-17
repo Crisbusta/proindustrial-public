@@ -202,7 +202,7 @@ export default function PanelInbox() {
     <>
       <div className="panel-topbar">
         <span className="panel-topbar-title">
-          Solicitudes de cotización
+          Cotizaciones
           {newCount > 0 && (
             <span style={{ marginLeft: 'var(--sp-3)', fontSize: 'var(--text-xs)', background: '#EFF6FF', color: '#1D4ED8', padding: '2px 8px', borderRadius: 20, fontWeight: 'var(--weight-semibold)' }}>
               {newCount} nuevas

@@ -44,7 +44,7 @@ export default function PanelLayout() {
 
   const navItems = [
     { to: '/panel/dashboard', label: 'Resumen', Icon: IconLayoutDashboard },
-    { to: '/panel/solicitudes', label: 'Solicitudes', Icon: IconInbox },
+    { to: '/panel/solicitudes', label: 'Cotizaciones', Icon: IconInbox },
     { to: '/panel/servicios', label: 'Mis servicios', Icon: IconPackage },
     { to: '/panel/certificaciones', label: 'Certificaciones', Icon: IconAward },
     { to: '/panel/casos', label: 'Casos destacados', Icon: IconFolderOpen },

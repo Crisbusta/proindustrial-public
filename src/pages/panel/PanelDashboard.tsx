@@ -35,7 +35,7 @@ export default function PanelDashboard() {
 
   const kpis = [
     {
-      label: 'Solicitudes nuevas',
+      label: 'Cotizaciones nuevas',
       value: stats?.newQuotes ?? '—',
       icon: IconInbox,
       iconBg: '#EFF6FF',
@@ -125,7 +125,7 @@ export default function PanelDashboard() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-6)' }}>
           <div className="panel-section">
             <div className="panel-section-header">
-              <h2 className="panel-section-title">Solicitudes recientes</h2>
+              <h2 className="panel-section-title">Cotizaciones recientes</h2>
               <Link to="/panel/solicitudes" className="btn btn-ghost btn-sm">
                 Ver todas
                 <IconArrowRight size={14} />
