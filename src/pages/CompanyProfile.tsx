@@ -102,8 +102,9 @@ export default function CompanyProfile() {
 
       {/* ── Cover strip ───────────────────────────── */}
       {company.coverUrl && (
-        <div style={{ width: '100%', height: 220, overflow: 'hidden', background: 'var(--color-primary)' }}>
-          <img src={company.coverUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.85 }} />
+        <div className="company-cover-strip">
+          <img src={company.coverUrl} alt="" className="company-cover-strip__blur" aria-hidden="true" />
+          <img src={company.coverUrl} alt="" className="company-cover-strip__main" />
         </div>
       )}
 
