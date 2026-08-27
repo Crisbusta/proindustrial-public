@@ -64,12 +64,12 @@ export default function Footer() {
           <div>
             <p className="footer-col-title">Contacto</p>
             <div className="footer-links">
-              <a href="mailto:hola@puntofusion.cl" className="footer-link">
-                hola@puntofusion.cl
+              <a href="mailto:contacto@puntofusion.cl" className="footer-link">
+                contacto@puntofusion.cl
               </a>
-              <span className="footer-link" style={{ cursor: 'default', opacity: 0.5 }}>
-                +56 2 2xxx xxxx
-              </span>
+              <a href="tel:+56969052505" className="footer-link">
+                +56 9 6905 2505
+              </a>
               <span className="footer-link" style={{ cursor: 'default', opacity: 0.5 }}>
                 Santiago, Chile
               </span>
