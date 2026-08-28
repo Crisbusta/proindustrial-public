@@ -1,11 +1,35 @@
-import { useState, useEffect, FormEvent } from 'react'
+import { useState, useEffect, useCallback, FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import Breadcrumb from '../components/Breadcrumb'
 import { IconCheck, IconArrowRight } from '../components/Icons'
 import { fetchRegions, fetchCategoryGroups, submitRegistration } from '../api/client'
+import { LIMITS } from '../constants/limits'
 import type { CategoryGroup, ProviderRegistration } from '../types'
+
+type FieldErrors = Partial<Record<keyof ProviderRegistration, string>>
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+// Ancla de cada campo, para llevar el foco al primero que falle.
+const FIELD_IDS: Record<keyof ProviderRegistration, string> = {
+  companyName: 'companyName',
+  email: 'reg-email',
+  phone: 'reg-phone',
+  region: 'reg-region',
+  services: 'services-group',
+  description: 'description',
+}
+
+function FieldError({ id, message }: { id: string; message?: string }) {
+  if (!message) return null
+  return (
+    <p id={id} role="alert" className="form-hint" style={{ color: '#DC2626', fontWeight: 'var(--weight-medium)' }}>
+      {message}
+    </p>
+  )
+}
 
 const EMPTY: ProviderRegistration = {
   companyName: '',
@@ -30,17 +54,37 @@ export default function RegisterProviderPage() {
   const [error, setError] = useState('')
   const [regions, setRegions] = useState<string[]>([])
   const [groups, setGroups] = useState<CategoryGroup[]>([])
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
+  const [metaLoading, setMetaLoading] = useState(true)
+  const [metaError, setMetaError] = useState(false)
 
-  useEffect(() => {
-    fetchRegions().then(r => setRegions(r.filter(r => r !== 'Todas las regiones'))).catch(() => {})
-    fetchCategoryGroups().then(setGroups).catch(() => {})
+  // Antes ambos fetch tenían .catch(() => {}): si la API fallaba, el usuario
+  // veía el selector de región vacío y ni un solo checkbox de categoría, sin
+  // ninguna explicación, y enviaba el formulario incompleto.
+  const loadMeta = useCallback(() => {
+    setMetaLoading(true)
+    setMetaError(false)
+    Promise.all([fetchRegions(), fetchCategoryGroups()])
+      .then(([r, g]) => {
+        setRegions(r.filter(x => x !== 'Todas las regiones'))
+        setGroups(g)
+      })
+      .catch(() => setMetaError(true))
+      .finally(() => setMetaLoading(false))
   }, [])
+
+  useEffect(() => { loadMeta() }, [loadMeta])
 
   const set = (field: keyof Omit<ProviderRegistration, 'services'>) => (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => setForm(prev => ({ ...prev, [field]: e.target.value }))
+  ) => {
+    const { value } = e.target
+    setForm(prev => ({ ...prev, [field]: value }))
+    setFieldErrors(prev => (prev[field] ? { ...prev, [field]: undefined } : prev))
+  }
 
   const toggleService = (slug: string) => {
+    setFieldErrors(prev => (prev.services ? { ...prev, services: undefined } : prev))
     setForm(prev => ({
       ...prev,
       services: prev.services.includes(slug)
@@ -49,18 +93,69 @@ export default function RegisterProviderPage() {
     }))
   }
 
+  // El <form> lleva noValidate para poder mostrar los mensajes en español y
+  // junto a cada campo. Eso exige validar aquí: antes no había ninguna
+  // validación, así que los required eran decorativos y se podía enviar el
+  // formulario casi vacío.
+  const validate = (): FieldErrors => {
+    const errs: FieldErrors = {}
+    const name = form.companyName.trim()
+    const email = form.email.trim()
+    const phone = form.phone.trim()
+    const description = form.description.trim()
+
+    if (name.length < LIMITS.companyName.min) {
+      errs.companyName = `Ingresa el nombre de la empresa (mínimo ${LIMITS.companyName.min} caracteres).`
+    } else if (name.length > LIMITS.companyName.max) {
+      errs.companyName = `El nombre no puede superar los ${LIMITS.companyName.max} caracteres.`
+    }
+
+    if (!EMAIL_RE.test(email)) errs.email = 'Ingresa un correo electrónico válido.'
+    else if (email.length > LIMITS.email.max) errs.email = `El correo no puede superar los ${LIMITS.email.max} caracteres.`
+
+    if (phone.length < LIMITS.phone.min) errs.phone = 'Ingresa un teléfono de contacto.'
+    else if (phone.length > LIMITS.phone.max) errs.phone = `El teléfono no puede superar los ${LIMITS.phone.max} caracteres.`
+
+    if (!form.region) errs.region = 'Selecciona tu región principal.'
+
+    if (form.services.length === 0) {
+      errs.services = 'Selecciona al menos una categoría: es lo que permite que te encuentren en el directorio.'
+    }
+
+    if (description.length < LIMITS.description.min) {
+      errs.description = `Cuéntanos un poco más: al menos ${LIMITS.description.min} caracteres.`
+    } else if (description.length > LIMITS.description.max) {
+      errs.description = `La descripción no puede superar los ${LIMITS.description.max} caracteres.`
+    }
+
+    return errs
+  }
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
+
+    const errs = validate()
+    setFieldErrors(errs)
+    if (Object.keys(errs).length > 0) {
+      setError('')
+      const firstField = (['companyName', 'email', 'phone', 'region', 'services', 'description'] as const)
+        .find(f => errs[f])
+      const anchor = firstField === 'services' ? 'services-group' : FIELD_IDS[firstField ?? 'companyName']
+      document.getElementById(anchor)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      document.getElementById(anchor)?.focus?.()
+      return
+    }
+
     setLoading(true)
     setError('')
     try {
       await submitRegistration({
-        companyName: form.companyName,
-        email: form.email,
-        phone: form.phone || undefined,
-        region: form.region || undefined,
+        companyName: form.companyName.trim(),
+        email: form.email.trim().toLowerCase(),
+        phone: form.phone.trim(),
+        region: form.region,
         services: form.services,
-        description: form.description || undefined,
+        description: form.description.trim(),
       })
       setSubmitted(true)
     } catch (err) {
@@ -146,8 +241,12 @@ export default function RegisterProviderPage() {
                         value={form.companyName}
                         onChange={set('companyName')}
                         required
+                        maxLength={LIMITS.companyName.max}
                         autoComplete="organization"
+                        aria-invalid={!!fieldErrors.companyName}
+                        aria-describedby={fieldErrors.companyName ? 'err-companyName' : undefined}
                       />
+                      <FieldError id="err-companyName" message={fieldErrors.companyName} />
                     </div>
 
                     <div className="grid-2" style={{ gap: 'var(--sp-5)' }}>
@@ -163,8 +262,12 @@ export default function RegisterProviderPage() {
                           value={form.email}
                           onChange={set('email')}
                           required
+                          maxLength={LIMITS.email.max}
                           autoComplete="email"
+                          aria-invalid={!!fieldErrors.email}
+                          aria-describedby={fieldErrors.email ? 'err-email' : undefined}
                         />
+                        <FieldError id="err-email" message={fieldErrors.email} />
                       </div>
                       <div className="form-group">
                         <label htmlFor="reg-phone" className="form-label">
@@ -174,12 +277,16 @@ export default function RegisterProviderPage() {
                           id="reg-phone"
                           type="tel"
                           className="form-input"
-                          placeholder="+56 2 xxxx xxxx"
+                          placeholder="+56 9 1234 5678"
                           value={form.phone}
                           onChange={set('phone')}
                           required
+                          maxLength={LIMITS.phone.max}
                           autoComplete="tel"
+                          aria-invalid={!!fieldErrors.phone}
+                          aria-describedby={fieldErrors.phone ? 'err-phone' : undefined}
                         />
+                        <FieldError id="err-phone" message={fieldErrors.phone} />
                       </div>
                     </div>
 
@@ -193,12 +300,16 @@ export default function RegisterProviderPage() {
                         value={form.region}
                         onChange={set('region')}
                         required
+                        disabled={metaLoading || metaError}
+                        aria-invalid={!!fieldErrors.region}
+                        aria-describedby={fieldErrors.region ? 'err-region' : undefined}
                       >
-                        <option value="">Seleccionar región...</option>
+                        <option value="">{metaLoading ? 'Cargando regiones...' : 'Seleccionar región...'}</option>
                         {regions.map(r => (
                           <option key={r} value={r}>{r}</option>
                         ))}
                       </select>
+                      <FieldError id="err-region" message={fieldErrors.region} />
                     </div>
                   </div>
                 </fieldset>
@@ -210,7 +321,31 @@ export default function RegisterProviderPage() {
                   <p style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)', marginBottom: 'var(--sp-5)' }}>
                     Selecciona todas las categorías que apliquen a tu empresa.
                   </p>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 'var(--sp-3)' }}>
+
+                  {metaError && (
+                    <div role="alert" style={{ background: '#FEF2F2', border: '1px solid #FCA5A5', borderRadius: 'var(--radius-md)', padding: 'var(--sp-4)', marginBottom: 'var(--sp-4)', fontSize: 'var(--text-sm)', color: '#B91C1C' }}>
+                      No pudimos cargar las regiones y categorías.{' '}
+                      <button
+                        type="button"
+                        onClick={loadMeta}
+                        style={{ background: 'none', border: 'none', padding: 0, color: '#B91C1C', fontWeight: 'var(--weight-semibold)', textDecoration: 'underline', cursor: 'pointer' }}
+                      >
+                        Reintentar
+                      </button>
+                    </div>
+                  )}
+
+                  <div id="services-group" tabIndex={-1} style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 'var(--sp-3)' }}>
+                    {metaLoading && !metaError && (
+                      <p style={{ gridColumn: '1 / -1', fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>
+                        Cargando categorías...
+                      </p>
+                    )}
+                    {!metaLoading && !metaError && groups.length === 0 && (
+                      <p style={{ gridColumn: '1 / -1', fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>
+                        No hay categorías disponibles en este momento.
+                      </p>
+                    )}
                     {groups.map(cat => {
                       const selected = form.services.includes(cat.slug)
                       return (
@@ -232,11 +367,14 @@ export default function RegisterProviderPage() {
                             userSelect: 'none',
                           }}
                         >
+                          {/* display:none sacaba el input del orden de tabulación
+                              y del árbol de accesibilidad: la categoría no se
+                              podía seleccionar con teclado ni con lector. */}
                           <input
                             type="checkbox"
                             checked={selected}
                             onChange={() => toggleService(cat.slug)}
-                            style={{ display: 'none' }}
+                            style={{ position: 'absolute', opacity: 0, width: 1, height: 1, margin: 0 }}
                             aria-label={cat.name}
                           />
                           <span style={{
@@ -258,6 +396,7 @@ export default function RegisterProviderPage() {
                       )
                     })}
                   </div>
+                  <FieldError id="err-services" message={fieldErrors.services} />
                 </fieldset>
 
                 <fieldset style={{ border: 'none', padding: 0, margin: 0 }}>
@@ -275,9 +414,19 @@ export default function RegisterProviderPage() {
                       value={form.description}
                       onChange={set('description')}
                       required
-                      rows={4}
+                      rows={5}
+                      maxLength={LIMITS.description.max}
+                      aria-invalid={!!fieldErrors.description}
+                      aria-describedby={fieldErrors.description ? 'err-description' : 'hint-description'}
                     />
-                    <p className="form-hint">Máximo 300 caracteres. Esta descripción aparecerá en tu perfil público.</p>
+                    <p id="hint-description" className="form-hint">
+                      {form.description.length}/{LIMITS.description.max} caracteres
+                      {form.description.trim().length < LIMITS.description.min
+                        ? ` · mínimo ${LIMITS.description.min}`
+                        : ''}
+                      . Esta descripción aparecerá en tu perfil público.
+                    </p>
+                    <FieldError id="err-description" message={fieldErrors.description} />
                   </div>
                 </fieldset>
 
@@ -290,7 +439,7 @@ export default function RegisterProviderPage() {
                   <button
                     type="submit"
                     className="btn btn-primary btn-lg"
-                    disabled={loading}
+                    disabled={loading || metaLoading || metaError}
                     aria-busy={loading}
                   >
                     {loading ? 'Enviando...' : (

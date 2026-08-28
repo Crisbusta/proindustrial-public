@@ -82,17 +82,17 @@ Para que funcione online, el backend en Railway debe tener:
 | Tuberías del Sur S.A. | `proyectos@tuberiasdelsur.cl` |
 | Electro Industrial SpA | `info@electroindustrial.cl` |
 
-La contraseña de las cuentas demo es `demo123`.
+La contraseña de las cuentas demo no se versiona; pídela al responsable del entorno.
 
 ## Credenciales admin
 
 - Email: `admin@proindustrial.local`
-- Contraseña: `demo123`
+- Contraseña: no versionada (ver arriba)
 
 ## Aprobación y acceso inicial
 
 - Al aprobar un registro desde `/admin/registros`, se crea la empresa y el usuario proveedor.
-- La contraseña inicial del proveedor es `demo123`.
+- La contraseña inicial del proveedor se genera al azar y llega por correo.
 - En el primer login, el proveedor debe cambiar la contraseña antes de entrar al panel.
 - Si el backend tiene SMTP configurado, se envía un correo automático con el acceso inicial.
 

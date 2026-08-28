@@ -171,11 +171,26 @@ export interface ProviderRegistrationResponse {
   email: string
   phone: string | null
   region: string | null
-  services: string[]
+  /** Puede llegar null en registros creados antes de que el repositorio
+   *  forzara un array vacío; tratar siempre con `?? []`. */
+  services: string[] | null
   description: string | null
   status: 'pending' | 'approved' | 'rejected'
   createdAt: string
+
+  /** Vínculo con lo que creó la aprobación (migración 011). */
+  companyId: string | null
+  userId: string | null
+  approvedAt: string | null
+  /** Resultado persistido del envío del correo de acceso. */
+  emailStatus: EmailDeliveryStatus | null
+  emailNote: string | null
+  /** Motivo que dejó el admin al rechazar. Opcional. */
+  rejectionReason: string | null
+  rejectedAt: string | null
 }
+
+export type EmailDeliveryStatus = 'sent' | 'logged' | 'failed' | 'pending'
 
 // (CompanyService is now defined above with images field)
 
@@ -224,6 +239,6 @@ export interface AdminApprovalResponse {
     createdAt: string
   }
   initialPassword: string
-  emailStatus?: 'sent' | 'logged' | 'failed'
+  emailStatus?: EmailDeliveryStatus
   emailNote?: string
 }

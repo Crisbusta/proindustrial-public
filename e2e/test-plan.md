@@ -2,8 +2,8 @@
 
 **App:** `http://localhost:3001`
 **Viewports:** Desktop `1280x720` · Mobile `375x812`
-**Credenciales provider:** `contacto@acerospacifico.cl` / `demo123`
-**Credenciales admin:** `admin@proindustrial.local` / `demo123`
+**Credenciales provider:** `contacto@acerospacifico.cl` / contraseña desde la variable `E2E_PROVIDER_PASSWORD`
+**Credenciales admin:** `admin@proindustrial.local` / contraseña desde la variable `E2E_ADMIN_PASSWORD`
 **Herramienta:** Playwright MCP (browser_navigate, browser_snapshot, browser_click, browser_fill_form, browser_console_messages)
 
 ---

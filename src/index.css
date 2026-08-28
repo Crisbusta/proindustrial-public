@@ -1445,6 +1445,9 @@ ul, ol {
   flex-direction: column;
   min-height: 100vh;
   background: var(--color-bg);
+  /* Sin min-width:0, un texto largo sin espacios ensancha esta columna del
+     grid y mete scroll horizontal a toda la pantalla del panel. */
+  min-width: 0;
 }
 
 .panel-topbar {
@@ -1471,6 +1474,54 @@ ul, ol {
   display: flex;
   align-items: center;
   gap: var(--sp-4);
+}
+
+/* Bandeja de dos paneles (inbox del panel y registros del admin).
+   Estas reglas base faltaban: .inbox-panels solo estaba definido dentro del
+   media query de móvil, así que en escritorio la lista y el detalle se
+   apilaban en vez de quedar lado a lado. */
+.inbox-panels {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: var(--sp-5);
+  align-items: start;
+}
+
+.inbox-list,
+.inbox-detail {
+  min-width: 0;
+}
+
+/* Texto de origen externo (descripciones, correos, nombres de empresa) puede
+   venir sin espacios y desbordar su contenedor. */
+.inbox-list p,
+.inbox-detail p,
+.inbox-detail h2,
+.service-chip {
+  overflow-wrap: anywhere;
+}
+
+/* Descripción del registro: se acota en altura para que los botones de
+   aprobar/rechazar no queden a varias pantallas de scroll. */
+.registration-description {
+  max-height: 260px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  padding-right: var(--sp-2);
+}
+
+/* Barra de acciones siempre visible al pie del detalle. */
+.registration-actions {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+  padding-top: var(--sp-4);
+  margin-top: var(--sp-4);
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface);
 }
 
 .panel-content {

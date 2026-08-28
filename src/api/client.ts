@@ -20,20 +20,42 @@ const BASE = '/api'
 
 // ── Generic fetch helpers ──────────────────────────────────────────────────
 
-async function request<T>(path: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, options)
+type StorageKey = 'panelToken' | 'adminToken'
+
+/** Error de API que conserva el código HTTP, para poder distinguir un
+ *  conflicto recuperable (409) de una caída real del servidor (500). */
+export class ApiError extends Error {
+  status: number
+  constructor(message: string, status: number) {
+    super(message)
+    this.name = 'ApiError'
+    this.status = status
+  }
+}
+
+async function request<T>(path: string, options?: RequestInit, storageKey?: StorageKey): Promise<T> {
+  let res: Response
+  try {
+    res = await fetch(`${BASE}${path}`, options)
+  } catch (err) {
+    // Un abort es intencional (el componente canceló la petición): debe
+    // propagarse tal cual para que quien llama lo distinga de un fallo real.
+    if (err instanceof DOMException && err.name === 'AbortError') throw err
+    // fetch rechaza con un TypeError cuyo mensaje ("Failed to fetch") se
+    // acababa mostrando en inglés y sin decir si la petición llegó o no.
+    throw new ApiError('No pudimos conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.', 0)
+  }
+
   if (!res.ok) {
-    // Expired or invalid token in authenticated calls → force logout
-    if (res.status === 401 && options?.headers) {
-      const headers = options.headers as Record<string, string>
-      if (headers['Authorization']) {
-        localStorage.removeItem('panelToken')
-        localStorage.removeItem('adminToken')
-        window.location.href = '/panel/login'
-      }
+    // Sesión expirada: se cierra solo la sesión afectada y se vuelve al
+    // login que corresponde. Antes se borraban ambos tokens y siempre se
+    // redirigía al panel de proveedores, incluso viniendo del backoffice.
+    if (res.status === 401 && storageKey) {
+      localStorage.removeItem(storageKey)
+      window.location.href = storageKey === 'adminToken' ? '/admin/login' : '/panel/login'
     }
     const body = await res.json().catch(() => ({}))
-    throw new Error(body.error ?? res.statusText)
+    throw new ApiError(body.error ?? res.statusText, res.status)
   }
   const json = await res.json()
   // Most endpoints wrap in {"data": ...}; auth endpoints return flat objects
@@ -54,47 +76,47 @@ function post<T>(path: string, body: unknown): Promise<T> {
 
 // ── Auth token helpers ─────────────────────────────────────────────────────
 
-function getToken(storageKey: 'panelToken' | 'adminToken'): string {
+function getToken(storageKey: StorageKey): string {
   return localStorage.getItem(storageKey) ?? ''
 }
 
-function authHeaders(storageKey: 'panelToken' | 'adminToken'): Record<string, string> {
+function authHeaders(storageKey: StorageKey): Record<string, string> {
   return {
     'Content-Type': 'application/json',
     Authorization: `Bearer ${getToken(storageKey)}`,
   }
 }
 
-function authGet<T>(path: string, storageKey: 'panelToken' | 'adminToken' = 'panelToken'): Promise<T> {
-  return request<T>(path, { headers: authHeaders(storageKey) })
+function authGet<T>(path: string, storageKey: StorageKey = 'panelToken', signal?: AbortSignal): Promise<T> {
+  return request<T>(path, { headers: authHeaders(storageKey), signal }, storageKey)
 }
 
-function authPost<T>(path: string, body: unknown, storageKey: 'panelToken' | 'adminToken' = 'panelToken'): Promise<T> {
+function authPost<T>(path: string, body: unknown, storageKey: StorageKey = 'panelToken'): Promise<T> {
   return request<T>(path, {
     method: 'POST',
     headers: authHeaders(storageKey),
     body: JSON.stringify(body),
-  })
+  }, storageKey)
 }
 
-function authPatch<T>(path: string, body: unknown, storageKey: 'panelToken' | 'adminToken' = 'panelToken'): Promise<T> {
+function authPatch<T>(path: string, body: unknown, storageKey: StorageKey = 'panelToken'): Promise<T> {
   return request<T>(path, {
     method: 'PATCH',
     headers: authHeaders(storageKey),
     body: JSON.stringify(body),
-  })
+  }, storageKey)
 }
 
-function authPut<T>(path: string, body: unknown, storageKey: 'panelToken' | 'adminToken' = 'panelToken'): Promise<T> {
+function authPut<T>(path: string, body: unknown, storageKey: StorageKey = 'panelToken'): Promise<T> {
   return request<T>(path, {
     method: 'PUT',
     headers: authHeaders(storageKey),
     body: JSON.stringify(body),
-  })
+  }, storageKey)
 }
 
-function authDelete<T>(path: string, storageKey: 'panelToken' | 'adminToken' = 'panelToken'): Promise<T> {
-  return request<T>(path, { method: 'DELETE', headers: authHeaders(storageKey) })
+function authDelete<T>(path: string, storageKey: StorageKey = 'panelToken'): Promise<T> {
+  return request<T>(path, { method: 'DELETE', headers: authHeaders(storageKey) }, storageKey)
 }
 
 // ── Public endpoints ───────────────────────────────────────────────────────
@@ -289,16 +311,26 @@ export const fetchCompanyProjects = (slug: string): Promise<CompanyProject[]> =>
 
 // ── Admin (JWT protected) ──────────────────────────────────────────────────
 
-export const fetchAdminRegistrations = (status?: 'pending' | 'approved' | 'rejected'): Promise<AdminRegistration[]> => {
+export const fetchAdminRegistrations = (
+  status?: 'pending' | 'approved' | 'rejected',
+  signal?: AbortSignal,
+): Promise<AdminRegistration[]> => {
   const qs = status ? `?status=${status}` : ''
-  return authGet(`/admin/registrations${qs}`, 'adminToken')
+  return authGet(`/admin/registrations${qs}`, 'adminToken', signal)
 }
 
 export const approveRegistration = (id: string): Promise<AdminApprovalResponse> =>
   authPost(`/admin/registrations/${id}/approve`, {}, 'adminToken')
 
-export const rejectRegistration = (id: string): Promise<ProviderRegistrationResponse> =>
-  authPost(`/admin/registrations/${id}/reject`, {}, 'adminToken')
+export const rejectRegistration = (
+  id: string,
+  reason?: string,
+  notify = true,
+): Promise<ProviderRegistrationResponse> =>
+  authPost(`/admin/registrations/${id}/reject`, { reason: reason ?? '', notify }, 'adminToken')
+
+export const resendCredentials = (id: string): Promise<AdminApprovalResponse> =>
+  authPost(`/admin/registrations/${id}/resend-credentials`, {}, 'adminToken')
 
 export const deleteApprovedCompany = (id: string): Promise<{ ok: boolean }> =>
   authDelete(`/admin/registrations/${id}/company`, 'adminToken')
